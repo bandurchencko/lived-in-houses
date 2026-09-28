@@ -74,6 +74,22 @@ Two families today: **tavern with forge** (four compositions) and **house with a
 shed, beds, wattle fence), in two styles — **red stone** (lime plaster, dark timber, terracotta tiles) and **thatched
 cottage** (cream clay, dark half-timbering, thick thatch). All seven examples pass all of their checks.
 
+## Engines, formats, requirements
+
+| | |
+|---|---|
+| **Runs on** | Python (tested on 3.13) with `numpy`, `trimesh`, `pillow`; `pytest` for the tests. No engine needed to generate. |
+| **Main output** | **glTF 2.0 binary (`.glb`)** — metres, Y-up, entrance facing −Z; one node per group (*shell, partitions, floors, roof, furniture, props, greenery, ground*) so you can hide the roof or the walls; PBR materials per material slot (base colour, roughness, metallic, glowing embers in the hearth). About 13–20 thousand triangles and under 1 MB per house. |
+| **Also** | JSON of every stage — passport, plan (rooms, doors, stairs, parts), the list of details, the check results (`python -m generator_domov dom …`); plan sheets as images. |
+| **Unreal Engine 5** | Drag the `.glb` into the Content Browser (glTF import). In our own game a native builder turns the same details into Unreal meshes with Geometry Script — one mesh per group, textured materials, lights — 8–30 s per house (UE 5.8; not in this first release). |
+| **Unity** | Import the `.glb` with the official glTFast package. |
+| **Godot 4** | Drop the `.glb` into the project — imported natively. |
+| **Blender** | File → Import → glTF 2.0. |
+| **Web** | `docs/index.html` — a three.js viewer (the live demo above). |
+| **Your own engine** | The detail list is engine-free JSON of simple solids (boxes, walls with openings, beams, roof planes, profiles, cylinders, spheres, windows, eave tiles) — a builder for any engine is a few hundred lines. |
+
+**Not there yet:** textures and UVs in the glTF (materials are flat colours for now), LODs, only two families.
+
 ## Quick start
 
 ```bash
