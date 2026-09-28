@@ -3,22 +3,22 @@
   "semejstvo": "traktir",
   "stil": "mangala",
   "kompoz": "naves",
-  "chast": null,
-  "uklon_krysy_grad": 24,
-  "svs_m": 0.7,
+  "krysha": "dvuskat",
+  "uklon_krysy_grad": 28,
+  "svs_m": 0.8,
   "kamen_niza_m": 1.1,
-  "vysota_etazha_m": 2.9,
+  "vysota_etazha_m": 3.0,
   "shirina_m": null,
   "glubina_m": null,
   "stavni": true,
   "cveta": {
-   "steny": "#e3d3b4",
-   "kamen": "#b86a55",
-   "brus": "#6b5541",
-   "krysha": "#c0643f",
-   "stavni": "#5e4a3a"
+   "steny": "#e2d1b0",
+   "kamen": "#b86a52",
+   "brus": "#5c4835",
+   "krysha": "#b95a3c",
+   "stavni": "#5e4a37"
   },
-  "pochemu": "A two-storey plastered house with red stone lower walls and a terracotta tile roof, with a forge set under a gabled timber canopy at the front and shuttered windows."
+  "pochemu": "A two-storey house with lime-plastered walls over a red stone base, a terracotta tile roof with a timber-framed gable end, and a forge under a gabled tiled canopy in front, which makes it a mangala traktir with a naves front."
  },
  "zerno": 27576,
  "otkat_k_zernu": [],

@@ -109,8 +109,7 @@ needs no AI, no internet and no subscription** — only the picture step needs e
 ![Village street concept → generated house](docs/obrazy/obraz-ulica-k-vode.jpg)
 
 Two honest limits: the generator builds only what its rules know (a photo of a cathedral gives the nearest house it
-knows, in the cathedral's colours and proportions — not the cathedral; above, the concept's gable roof became the hip
-roof our tavern family knows), and the inside of a house is never in a picture: the generator invents a believable
+knows, in the cathedral's colours and proportions — not the cathedral), and the inside of a house is never in a picture: the generator invents a believable
 interior by its rules. That is the difference from image-to-3D AI: those copy the outer shape and give you a statue;
 this one follows the picture's style and gives you a house you can live in.
 

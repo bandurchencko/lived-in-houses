@@ -399,15 +399,15 @@
    "title_ru": "По картинке · рисунок дома-кузни",
    "style": "mangala",
    "colors": {
-    "steny": "#e3d3b4",
-    "kamen": "#b86a55",
-    "brus": "#6b5541",
-    "krysha": "#c0643f",
-    "stavni": "#5e4a3a"
+    "steny": "#e2d1b0",
+    "kamen": "#b86a52",
+    "brus": "#5c4835",
+    "krysha": "#b95a3c",
+    "stavni": "#5e4a37"
    },
    "picture": "obraz/dom-kuznya/kartinka.jpg",
-   "details": 629,
-   "triangles": 16812,
+   "details": 613,
+   "triangles": 14608,
    "checks_passed": true,
    "checks": [
     {

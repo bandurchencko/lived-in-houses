@@ -46,3 +46,18 @@ def test_cveta_kartinki_v_palitre():
     pal = palitra('kolybel', {'steny': '#ff0000', 'krysha': '#00ff00', 'nevedomoe': '#0000ff', 'brus': 'plohoj'})
     assert pal[1][0][:3] == (1.0, 0.0, 0.0) and pal[3][0][:3] == (0.0, 1.0, 0.0)
     assert pal[2] == palitra('kolybel')[2]
+
+
+@pytest.mark.parametrize('kompoz', ['naves', 'galereya', 'ugol', 'pristrojka'])
+def test_dvuskatnaya_krysha_traktira(kompoz):
+    """Двускатная кровля трактира по картинке: щипцы и конёк вдоль фасада, проверки — все."""
+    pasport, plan, D, otchet = obraz.postroit({'semejstvo': 'traktir', 'kompoz': kompoz, 'krysha': 'dvuskat'}, 11)
+    assert pasport['parametry']['krysha'] == 'dvuskat'
+    assert all(x['ok'] for x in otchet['proverki'])
+    assert sum(1 for d in D.spisok if d['t'] == 'plita' and d['g'] == 'krysha') >= 2
+
+
+def test_valma_po_umolchaniyu():
+    from generator_domov import traktir
+    pas, plan, D = traktir.sobrat(13, 'galereya')
+    assert pas['parametry']['krysha'] == 'valma'

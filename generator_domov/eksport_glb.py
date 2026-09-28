@@ -4,7 +4,8 @@
 внутрь), материалы — цветами облика земли. Чтобы генератор можно было показать и попробовать без Unreal: браузер
 (`prosmotr/index.html`), Blender, любой просмотрщик glTF.
 
-    python -m generator_domov.eksport_glb traktir <зерно> [--kompoz=naves|galereya|ugol|pristrojka] [--vyhod=файл.glb]
+    python -m generator_domov.eksport_glb traktir <зерно> [--kompoz=naves|galereya|ugol|pristrojka] [--krysha=valma|dvuskat]
+        [--vyhod=файл.glb]
     python -m generator_domov.eksport_glb dom-dvor <зерно> [--chast=sad|masterskaya|krylco] [--sad=sev|jug]
         [--stil=mangala|kolybel] [--vyhod=файл.glb]
 
@@ -414,9 +415,9 @@ def main(a):
     poz = [x for x in a if not x.startswith('--')]
     semejstvo, zerno = poz[0], int(poz[1])
     if semejstvo == 'traktir':
-        pas, plan, D = traktir.sobrat(zerno, opc.get('kompoz'))
+        pas, plan, D = traktir.sobrat(zerno, opc.get('kompoz'), krysha=opc.get('krysha'))
         stil = 'mangala'
-        imya = 'traktir-%d-%s' % (zerno, pas['kompoz'])
+        imya = 'traktir-%d-%s' % (zerno, pas['kompoz']) + ('-dvuskat' if opc.get('krysha') == 'dvuskat' else '')
     elif semejstvo == 'dom-dvor':
         stil = opc.get('stil', 'mangala')
         chast, sad = opc.get('chast', 'sad'), opc.get('sad')

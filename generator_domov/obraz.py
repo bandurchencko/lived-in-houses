@@ -42,6 +42,8 @@ Return ONLY one valid JSON object (no comments, no prose around it) with these f
   canopy at the front), "ugol" (a corner terrace above the forge), "pristrojka" (a side annex); otherwise null.
 - "chast": for "dom-dvor" only — "krylco" (a porch with a canopy), "sad" (a garden at the side), "masterskaya"
   (a workshop under a canopy); otherwise null.
+- "krysha": for "traktir" only — "valma" (hip roof: slopes on all four sides) or "dvuskat" (gable roof: two slopes
+  with triangular gable walls at the ends); "dom-dvor" always has a gable roof.
 - "uklon_krysy_grad": roof pitch in degrees (tiles 20–34, thatch 38–52).
 - "svs_m": eave overhang in metres (0.45–0.9).
 - "kamen_niza_m": height of the stone base or of the lower stone walls in metres (0.3–1.6).
@@ -131,11 +133,14 @@ def normalizovat(pas):
         p['stil'] = 'mangala'                                   # трактир-кузня пока только в облике красного камня
         if p.get('kompoz') not in traktir.KOMPOZ:
             p['kompoz'] = None
+        if p.get('krysha') not in traktir.KRYSHI:
+            p['krysha'] = None
         p['chast'] = None
     else:
         if p.get('chast') not in dom_dvor.CHASTI:
             p['chast'] = None
         p['kompoz'] = None
+        p['krysha'] = None
     return p
 
 
@@ -152,7 +157,7 @@ def postroit(pas, zerno):
 
     def sobrat(z, ob):
         if pas['semejstvo'] == 'traktir':
-            return traktir.sobrat(z, pas.get('kompoz'), ob)
+            return traktir.sobrat(z, pas.get('kompoz'), ob, pas.get('krysha'))
         chast = pas.get('chast')
         return dom_dvor.sobrat(z, chast, [], None, 'jug' if chast == 'sad' else None, pas['stil'], ob)
 

@@ -76,7 +76,10 @@ PREDELY_OBRAZA = {'svs_m': ('svs', 0.5, 0.9), 'kamen_niza_m': ('kam', 0.6, 1.6),
 UKLON_OBRAZA = (20.0, 34.0)
 
 
-def parametry(zerno, kompoz=None, obraz=None):
+KRYSHI = ('valma', 'dvuskat')     # вальмовая (образец Астры, зерно 13) или двускатная со щипцами (рисунок дома-кузни)
+
+
+def parametry(zerno, kompoz=None, obraz=None, krysha=None):
     r = random.Random(zerno)
     p = {'zerno': zerno, 's': 1 if r.random() < 0.5 else -1}
     p['Wb'] = sn(r.uniform(8.4, 9.2))
@@ -126,13 +129,15 @@ def parametry(zerno, kompoz=None, obraz=None):
     if obraz:
         from .dom_dvor import primenit_obraz
         p, p['obraz_prizhato'] = primenit_obraz(p, obraz, PREDELY_OBRAZA, UKLON_OBRAZA)
+    k_ = krysha or (obraz or {}).get('krysha')             # по умолчанию — вальма: зёрна прежних домов не меняются
+    p['krysha'] = k_ if k_ in KRYSHI else 'valma'
     return p
 
 
-def sobrat(zerno, kompoz=None, obraz=None):
+def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
     """→ (паспорт, план, детали) дома; детали уже в осях слота (с отражением, если s = −1). obraz — числа облика с
     картинки (obraz.py), в пределах PREDELY_OBRAZA."""
-    p = parametry(zerno, kompoz, obraz)
+    p = parametry(zerno, kompoz, obraz, krysha)
     kz = p['kompoz']
     r = random.Random(p['zerno_melochej'])
     D = Detali()
@@ -431,10 +436,16 @@ def sobrat(zerno, kompoz=None, obraz=None):
 
     # ---------------- кровля (вальма; у galereya передний скат продлён над галереей) ----------------
     g = p['gal_g']
-    _valma(D, p, u0, u1, v0, v1, EV, pered=(g + 0.3 - p['svs']) if kz == 'galereya' else 0.0)
+    pered_ = (g + 0.3 - p['svs']) if kz == 'galereya' else 0.0
+    if p['krysha'] == 'dvuskat':
+        _dvuskat(D, p, u0, u1, v0, v1, EV, pered=pered_)
+    else:
+        _valma(D, p, u0, u1, v0, v1, EV, pered=pered_)
     WR = EV + ((v1 - v0) / 2.0) * tg
 
     def w_krovli(uu, vv_):
+        if p['krysha'] == 'dvuskat':
+            return min(EV + min(vv_ - v0, v1 - vv_) * tg, WR)
         dd = min(uu - u0, u1 - uu, vv_ - v0, v1 - vv_)
         return min(EV + dd * tg, WR)
 
@@ -568,7 +579,7 @@ def sobrat(zerno, kompoz=None, obraz=None):
         [13.0, [dvc + 0.35, vi0 + 1.55, GLZ + P], list(och2)],
     ]
     pasport = {'semejstvo': 'm-traktir-masterskaya', 'zemlya': 'mangala', 'zerno': zerno, 'sled': [SU, SV],
-               'etazhi': 2, 'parametry': p, 'kompoz': kz, 'kompoz_imya': IMENA_KOMPOZ[kz], 'krysha': 'valmovaya',
+               'etazhi': 2, 'parametry': p, 'kompoz': kz, 'kompoz_imya': IMENA_KOMPOZ[kz], 'krysha': 'valmovaya' if p['krysha'] == 'valma' else 'dvuskatnaya',
                'nutro': 'polnoe'}
     plan['razmery'] = {'F1': F1, 'F2': F2, 'EV': EV, 'KR': KR, 'korpus': [u0, u1, v0, v1]}
     if p['s'] < 0:
@@ -764,12 +775,68 @@ def _valma(D, p, u0, u1, v0, v1, EV, pered=0.0):
     _vypuski_stropil(D, tg, u0, u1, v0, v1, EV, sv, pered)
 
 
-def _vypuski_stropil(D, tg, u0, u1, v0, v1, EV, sv, pered):
-    """Концы стропил под свесом через 0,6 м — ряд теней под кровлей (Астра 28.09: «усиль тень под кровлей»)."""
+def _dvuskat(D, p, u0, u1, v0, v1, EV, pered=0.0):
+    """Двускатная кровля над корпусом (паспорт 'krysha': 'dvuskat' — как на рисунке дома-кузни Астры 27.09): конёк
+    вдоль фасада, кровля выходит за щипцы на fr; щипцы — треугольники извести до ската со стойкой и раскосами тёмного
+    бруса; ветровые доски по наклонным краям, черепица у обоих карнизов, подшива карнизов, выпуски прогонов на щипцах,
+    выпуски стропил под свесом. pered > 0 — передний скат продлён над галереей (как у вальмы)."""
+    tg = math.tan(math.radians(p['uklon']))
+    c, s = math.cos(math.radians(p['uklon'])), math.sin(math.radians(p['uklon']))
+    sv = p['svs']
+    fr = sn(min(0.6, max(0.4, sv * 0.8)))                # вынос за щипец — без новых вытяжек зерна
+    Db = v1 - v0
+    vc = (v0 + v1) / 2.0
+    WR = EV + (Db / 2.0) * tg
+    EVe = EV - sv * tg
+    a0, a1 = u0 - fr, u1 + fr
+    tol = 0.16
+    A, B = (a0, v0 - sv, EVe), (a1, v0 - sv, EVe)
+    C, Dd = (a1, v1 + sv, EVe), (a0, v1 + sv, EVe)
+    R0, R1 = (a0, vc, WR), (a1, vc, WR)
+    D.plita('krysha', CHER, [A, B, R1, R0], tol)
+    D.plita('krysha', CHER, [C, Dd, R0, R1], tol)
+    D.cil_os('krysha', CHER, (a0 - 0.05, vc, WR + 0.06), (a1 + 0.05, vc, WR + 0.06), 0.13, 6)
+    zap = 0.25
+    if pered > 0:                                        # над галереей передний скат длиннее, карниз ниже
+        e = sv + pered
+        We = EV - e * tg
+        A2, B2 = (a0, v0 - e, We), (a1, v0 - e, We)
+        D.plita('krysha', CHER, [A2, B2, B, A], tol)
+        D.cherepica(v0 - e, We, c, s, -s, c, a0 + zap, a1 - zap, ryadov=4, os_karniza='u')
+        v_pr, w_pr = v0 - e, We
+    else:
+        D.cherepica(v0 - sv, EVe, c, s, -s, c, a0 + zap, a1 - zap, ryadov=4, os_karniza='u')
+        v_pr, w_pr = v0 - sv, EVe
+    D.cherepica(v1 + sv, EVe, -c, s, s, c, a0 + zap, a1 - zap, ryadov=3, os_karniza='u')
+    for a in (a0 + 0.04, a1 - 0.04):                     # ветровые доски по наклонным краям
+        for (vk, wk) in ((v_pr, w_pr), (v1 + sv, EVe)):
+            D.brus('krysha', BRUS, (a, vk, wk - 0.12), (a, vc, WR - 0.12), 0.08, 0.28, (1, 0, 0), 0.01)
+    for (vk, wk) in ((v_pr, w_pr), (v1 + sv, EVe)):      # подшива карнизов
+        D.brus('krysha', BRUS, (a0, vk, wk - 0.2), (a1, vk, wk - 0.2), 0.08, 0.26, (0, 0, 1), 0.01)
+    ot = 0.22                                            # щипец — под скатом, внутри толщи кровли
+    for (g0, g1) in ((u0, u0 + T), (u1 - T, u1)):
+        D.profil('obolochka', SHT, [(v0, EV - 0.02), (v1, EV - 0.02), (vc, WR - ot)], 'vw', g0, g1)
+    for (lico, zn, a_kr) in ((u0, -1, a0), (u1, 1, a1)):
+        x = lico + zn * 0.06                             # брус щипца по лицу: стойка под коньком и два раскоса
+        D.brus('obolochka', BRUS, (x, vc, EV - 0.05), (x, vc, WR - ot - 0.08), 0.18, 0.2, (0, 1, 0))
+        dl = Db * 0.28
+        for zz in (-1, 1):
+            D.brus('obolochka', BRUS, (x, vc + zz * dl, EV + 0.02), (x, vc, EV + (WR - EV) * 0.55), 0.15, 0.18, (0, 1, 0))
+        konec = a_kr - zn * 0.08                         # выпуски прогонов — конёк и середины скатов
+        for (vv, ww) in ((vc, WR - 0.34), (v0 + Db * 0.25, EV + Db * 0.25 * tg - 0.3), (v1 - Db * 0.25, EV + Db * 0.25 * tg - 0.3)):
+            D.brus('krysha', BRUS, (lico - zn * 0.1, vv, ww), (konec, vv, ww), 0.14, 0.16, (0, 1, 0), 0.01)
+    _vypuski_stropil(D, tg, u0, u1, v0, v1, EV, sv, pered, storony=('ul', 'zad'))
+
+
+def _vypuski_stropil(D, tg, u0, u1, v0, v1, EV, sv, pered, storony=('ul', 'zad', 'sev', 'jug')):
+    """Концы стропил под свесом через 0,6 м — ряд теней под кровлей (Астра 28.09: «усиль тень под кровлей»).
+    storony — у двускатной только карнизы ('ul', 'zad'): на щипцах стропил нет."""
     c = 1.0 / math.sqrt(1.0 + tg * tg)
     niz = 0.16 / c + 0.07
     for (st, a0, a1, lico, zn, e) in (('ul', u0 + 0.35, u1 - 0.35, v0, -1, sv + pered), ('zad', u0 + 0.35, u1 - 0.35, v1, 1, sv),
                                        ('sev', v0 + 0.35, v1 - 0.35, u0, -1, sv), ('jug', v0 + 0.35, v1 - 0.35, u1, 1, sv)):
+        if st not in storony:
+            continue
         a = a0
         while a <= a1 + 1e-6:
             d0, d1 = -0.1, e - 0.1
