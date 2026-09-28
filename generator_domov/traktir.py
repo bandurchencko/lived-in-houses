@@ -71,7 +71,12 @@ class Rama:
         return D.profil(g, m, tochki_aw, 'vw', min(x0, x1), max(x0, x1), fs)
 
 
-def parametry(zerno, kompoz=None):
+# облик с картинки (obraz.py): поле паспорта → (параметр, мин, макс); размеры держит слот
+PREDELY_OBRAZA = {'svs_m': ('svs', 0.5, 0.9), 'kamen_niza_m': ('kam', 0.6, 1.6), 'vysota_etazha_m': ('H2', 2.6, 3.0)}
+UKLON_OBRAZA = (20.0, 34.0)
+
+
+def parametry(zerno, kompoz=None, obraz=None):
     r = random.Random(zerno)
     p = {'zerno': zerno, 's': 1 if r.random() < 0.5 else -1}
     p['Wb'] = sn(r.uniform(8.4, 9.2))
@@ -118,12 +123,16 @@ def parametry(zerno, kompoz=None):
     p['v0'] = sn(p['v1'] - p['Db'])
     if kz == 'pristrojka':
         p['pr_w'] = sn(min(p['pr_w'], SU - 0.1 - p['u1']))
+    if obraz:
+        from .dom_dvor import primenit_obraz
+        p, p['obraz_prizhato'] = primenit_obraz(p, obraz, PREDELY_OBRAZA, UKLON_OBRAZA)
     return p
 
 
-def sobrat(zerno, kompoz=None):
-    """→ (паспорт, план, детали) дома; детали уже в осях слота (с отражением, если s = −1)."""
-    p = parametry(zerno, kompoz)
+def sobrat(zerno, kompoz=None, obraz=None):
+    """→ (паспорт, план, детали) дома; детали уже в осях слота (с отражением, если s = −1). obraz — числа облика с
+    картинки (obraz.py), в пределах PREDELY_OBRAZA."""
+    p = parametry(zerno, kompoz, obraz)
     kz = p['kompoz']
     r = random.Random(p['zerno_melochej'])
     D = Detali()

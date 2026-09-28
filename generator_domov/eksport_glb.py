@@ -15,6 +15,7 @@ import json
 import math
 import os
 import random
+import re
 import sys
 
 import numpy as np
@@ -36,6 +37,22 @@ PALITRA = {
                                   2: ((0.24, 0.16, 0.10, 1), 0.75, 0.0, 0.0), 3: ((0.60, 0.50, 0.30, 1), 0.95, 0.0, 0.0)}},
 }
 BRUS, STEK, KRAS, ZHEL, CHER = 2, 4, 5, 6, 3
+CVETA_MESTA = {'kamen': 0, 'steny': 1, 'brus': 2, 'krysha': 3, 'stavni': 5}   # цвета облика с картинки → места
+
+
+def palitra(stil='mangala', cveta=None):
+    """Палитра облика; cveta — {'steny': '#rrggbb', …} с картинки (obraz.py) поверх неё."""
+    pal = dict(PALITRA.get(stil, PALITRA['mangala']))
+    for k, hx in (cveta or {}).items():
+        m = CVETA_MESTA.get(k)
+        if m is None or not isinstance(hx, str) or not re.fullmatch(r'#?[0-9a-fA-F]{6}', hx.strip()):
+            continue                                   # ИИ ошибся в цвете — место остаётся с цветом облика
+        hx = hx.strip()
+        h = hx.lstrip('#')
+        rgb = tuple(int(h[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+        _, sher, met, sv = pal[m]
+        pal[m] = ((rgb[0], rgb[1], rgb[2], 1.0), sher, met, sv)
+    return pal
 
 _KOR_F = np.array([[0, 2, 1], [0, 3, 2], [4, 5, 6], [4, 6, 7], [0, 1, 5], [0, 5, 4],
                    [1, 2, 6], [1, 6, 5], [2, 3, 7], [2, 7, 6], [3, 0, 4], [3, 4, 7]])
@@ -307,9 +324,10 @@ class Sborka:
         else:
             raise ValueError('неизвестная деталь %s' % t)
 
-    def scena(self, stil='mangala', zemlya=None):
-        """→ trimesh.Scene: узел на группу, внутри — сетка на место материала; zemlya — (u0, u1, v0, v1) плиты земли."""
-        pal = PALITRA.get(stil, PALITRA['mangala'])
+    def scena(self, stil='mangala', zemlya=None, cveta=None):
+        """→ trimesh.Scene: узел на группу, внутри — сетка на место материала; zemlya — (u0, u1, v0, v1) плиты земли;
+        cveta — цвета облика с картинки поверх палитры."""
+        pal = palitra(stil, cveta)
         sc = trimesh.Scene()
         if zemlya:
             u0, u1, v0, v1 = zemlya
@@ -346,7 +364,7 @@ class Sborka:
         return sc
 
 
-def dom_v_glb(D, put, stil='mangala', zemlya=None, zerno=27, plan=None):
+def dom_v_glb(D, put, stil='mangala', zemlya=None, zerno=27, plan=None, cveta=None):
     """Детали генератора (Detali или список словарей) → GLB. → сводка (треугольники по группам). plan — план дома:
     его садовые деревья (u, v, высота, масштаб, поворот) — стволом и кроной в группу «зелень» (в Unreal их ставит зелень
     двора настоящими растениями)."""
@@ -360,7 +378,7 @@ def dom_v_glb(D, put, stil='mangala', zemlya=None, zerno=27, plan=None):
     if zemlya is True:                                   # плита земли — по рамке дома с запасом 3 м
         V = np.vstack([V for kuski in S.kuski.values() for V, _ in kuski])
         zemlya = (V[:, 0].min() - 3.0, V[:, 0].max() + 3.0, V[:, 1].min() - 3.0, V[:, 1].max() + 3.0)
-    sc = S.scena(stil, zemlya)
+    sc = S.scena(stil, zemlya, cveta)
     os.makedirs(os.path.dirname(os.path.abspath(put)), exist_ok=True)
     sc.export(put)
     svodka = {}

@@ -89,12 +89,30 @@ materials and colours. Pictures come in one step earlier:
 4. **You look** (the browser viewer or your engine) and say what is off — and the numbers change, not the houses.
 5. *(next releases)* **The settlement planner** places the houses along streets, around a square, on terraces.
 
-**Can it make a house straight from a photo?** Almost. An AI that reads images can fill in the passport from a photo by
-itself — a small script, the generator stays the same — and can then compare its render with the photo and correct the
-numbers. Two honest limits: the generator builds only what its rules know (a photo of a cathedral gives the nearest house
-it knows, in the cathedral's colours and proportions — not the cathedral), and the inside of a house is never in a photo:
-the generator invents a believable interior by its rules. That is the difference from image-to-3D AI: those copy the
-outer shape and give you a statue; this one follows the picture's style and gives you a house you can live in.
+### A house from your picture
+
+Now the picture step is a command too. The **eyes** — an AI that can see images — read the picture into a passport, and
+the generator builds the nearest house it knows: with a real interior, passing its checks, in the picture's colours.
+
+```bash
+python -m generator_domov.obraz my-house.jpg --glaza=vruchnuyu   # free: paste the printed prompt and the picture into any chat AI
+python -m generator_domov.obraz my-house.jpg --glaza=claude      # automatic: Claude Code (your Claude subscription)
+python -m generator_domov.obraz my-house.jpg --glaza=ollama      # free and offline: a local vision model via Ollama (experimental)
+python -m generator_domov.obraz my-house.jpg --glaza=api         # automatic: an Anthropic API key, cents per picture (experimental)
+```
+
+You get `rab/obraz/<name>/<name>-dom.glb`, the passport the AI read and the check report. Drop the `.glb` onto the
+[live page](https://bandurchencko.github.io/lived-in-houses/) to look around it and inside it. **The generator itself
+needs no AI, no internet and no subscription** — only the picture step needs eyes, and free eyes work.
+
+![Forge-house concept → generated house](docs/obrazy/obraz-dom-kuznya.jpg)
+![Village street concept → generated house](docs/obrazy/obraz-ulica-k-vode.jpg)
+
+Two honest limits: the generator builds only what its rules know (a photo of a cathedral gives the nearest house it
+knows, in the cathedral's colours and proportions — not the cathedral; above, the concept's gable roof became the hip
+roof our tavern family knows), and the inside of a house is never in a picture: the generator invents a believable
+interior by its rules. That is the difference from image-to-3D AI: those copy the outer shape and give you a statue;
+this one follows the picture's style and gives you a house you can live in.
 
 ## Engines, formats, requirements
 

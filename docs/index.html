@@ -38,6 +38,8 @@
     <input id="srez" type="range" min="0" max="100" value="100">
   </div>
   <div class="podpis" id="proverki"></div>
+  <a id="kartinka-a" target="_blank" style="display:none"><img id="kartinka" alt="" style="width:100%;border-radius:6px;margin-top:6px"></a>
+  <div class="podpis" id="svoj-dom"></div>
   <div class="podpis" id="info"></div>
   <div class="podpis"><a href="https://github.com/bandurchencko/lived-in-houses">GitHub</a> · a rule-based generator of
     enterable village houses</div>
@@ -81,8 +83,8 @@ scene.background = new THREE.Color(0xbfd3e3);
 const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 500);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-scene.add(new THREE.HemisphereLight(0xdfeeff, 0x6b5a40, 1.1));
-const sun = new THREE.DirectionalLight(0xfff1dc, 2.4);
+scene.add(new THREE.HemisphereLight(0xfff3e2, 0x8f7c5c, 1.55));     // тёплый рассеянный свет: стены в тени — не голубые
+const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
 sun.position.set(-16, 24, -20);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -94,14 +96,26 @@ let tekushchij = null, vysota = 10;
 const loader = new GLTFLoader();
 const sel = document.getElementById('dom');
 sel.onchange = () => zagruzit(sel.value);
+const svoj = new URLSearchParams(location.search).get('dom');       // ?dom=путь/к/дому.glb — свой дом
 fetch(papka + 'manifest.json').then(r => r.json()).then(m => {
   DOMA = m.houses;
   for (const d of DOMA) { const o = document.createElement('option'); o.value = d.file; o.textContent = RU ? d.title_ru : d.title; sel.appendChild(o); }
-  zagruzit(DOMA[0].file);
+  if (svoj) zagruzitUrl(svoj, svoj.split('/').pop()); else zagruzit(DOMA[0].file);
 });
+// свой дом: перетащить файл .glb в окно
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => {
+  e.preventDefault();
+  const f = [...e.dataTransfer.files].find(x => x.name.toLowerCase().endsWith('.glb'));
+  if (f) zagruzitUrl(URL.createObjectURL(f), f.name);
+});
+function zagruzitUrl(url, imya) {
+  const o = document.createElement('option'); o.value = url; o.textContent = imya; sel.appendChild(o); sel.value = url;
+  zagruzit(url);
+}
 
 function zagruzit(f, gotovo) {
-  loader.load(papka + f, g => {
+  loader.load(/^(blob:|https?:|\/|\.)/.test(f) || f.includes('/') ? f : papka + f, g => {
     if (tekushchij) scene.remove(tekushchij);
     tekushchij = g.scene;
     tekushchij.traverse(o => {
@@ -131,6 +145,9 @@ function zagruzit(f, gotovo) {
       el.textContent = T.checks + ': ' + ok + ' / ' + d.checks.length;
       el.title = d.checks.map(x => (x.ok ? '✓ ' : '✗ ') + x.what).join(String.fromCharCode(10));
     }
+    const ka = document.getElementById('kartinka-a');           // дом по картинке — показать картинку рядом
+    if (d && d.picture) { ka.href = d.picture; document.getElementById('kartinka').src = d.picture; ka.style.display = 'block'; }
+    else ka.style.display = 'none';
     if (gotovo) gotovo();
   }, undefined, e => { document.getElementById('info').textContent = (RU ? 'Не загрузился ' : 'Failed to load ') + f + ': ' + e; });
 }
@@ -182,6 +199,7 @@ addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); sd
 new ResizeObserver(sdvig).observe(document.getElementById('panel'));
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 document.getElementById('srez-t').textContent = T.cut;
+document.getElementById('svoj-dom').textContent = RU ? 'Свой дом: перетащите файл .glb в окно.' : 'Your own house: drop a .glb file here.';
 </script>
 </body>
 </html>

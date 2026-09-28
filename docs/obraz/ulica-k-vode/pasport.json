@@ -1,0 +1,26 @@
+{
+ "pasport_kartinki": {
+  "semejstvo": "dom-dvor",
+  "stil": "kolybel",
+  "kompoz": null,
+  "chast": "krylco",
+  "uklon_krysy_grad": 46,
+  "svs_m": 0.8,
+  "kamen_niza_m": 0.9,
+  "vysota_etazha_m": 2.7,
+  "shirina_m": 8.6,
+  "glubina_m": 6.4,
+  "stavni": true,
+  "cveta": {
+   "steny": "#e8dcc2",
+   "kamen": "#b8aa8e",
+   "brus": "#5c4431",
+   "krysha": "#a8844f",
+   "stavni": "#7f8c72"
+  },
+  "pochemu": "The main house in the left foreground is a cottage with cream walls and dark timber framing, a thick, steep thatched roof over an attic window with shutters, a timber porch with a canopy over the front door and a dry-stone wall as its base, so the nearest match is a one-storey kolybel house with a porch."
+ },
+ "zerno": 72045,
+ "otkat_k_zernu": [],
+ "prizhato_k_predelam": []
+}

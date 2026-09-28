@@ -33,7 +33,35 @@ CHASTI = ('krylco', 'sad', 'masterskaya')
 IMENA_CHASTEJ = {'krylco': 'крыльцо с навесом к общему двору', 'sad': 'сад сбоку', 'masterskaya': 'мастерская под навесом'}
 
 
-def parametry(zerno, chast=None, prosvet=None, sad_k=None, stil='kolybel'):
+# облик с картинки (obraz.py): поле паспорта → (параметр, мин, макс); пределы — там, где проверки дома проходят
+PREDELY_OBRAZA = {'shirina_m': ('Wb', 7.6, 9.8), 'glubina_m': ('Db', 5.6, 7.2), 'vysota_etazha_m': ('H1', 2.6, 3.1),
+                  'svs_m': ('svs', 0.45, 0.9), 'kamen_niza_m': ('cokol', 0.3, 1.1)}
+UKLON_OBRAZA = {'kolybel': (38.0, 52.0), 'mangala': (20.0, 34.0)}
+
+
+def primenit_obraz(p, obraz, predely, uklon):
+    """Числа облика с картинки → параметры дома, в пределах (что вне — прижимается к краю). → (p, что прижато)."""
+    prizhato = []
+    for pole, (kl, lo, hi) in predely.items():
+        x = obraz.get(pole)
+        if x is None:
+            continue
+        x = float(x)
+        if not lo <= x <= hi:
+            prizhato.append(pole)
+        p[kl] = sn(min(hi, max(lo, x)))
+    x = obraz.get('uklon_krysy_grad')
+    if x is not None:
+        lo, hi = uklon
+        if not lo <= float(x) <= hi:
+            prizhato.append('uklon_krysy_grad')
+        p['uklon'] = round(min(hi, max(lo, float(x))), 1)
+    if obraz.get('stavni') is not None:
+        p['stavni'] = bool(obraz['stavni'])
+    return p, prizhato
+
+
+def parametry(zerno, chast=None, prosvet=None, sad_k=None, stil='kolybel', obraz=None):
     r = random.Random(zerno * 7919 + 17)
     p = {'zerno': zerno, 's': 1 if r.random() < 0.5 else -1}
     p['Wb'] = sn(r.uniform(8.0, 9.2))
@@ -59,13 +87,19 @@ def parametry(zerno, chast=None, prosvet=None, sad_k=None, stil='kolybel'):
         p['uklon'] = round(p['uklon'] - 18.0, 1)             # черепица 24–30°
         p['tolshchina'] = 0.16
         p['cokol'] = sn(p['cokol'] + 0.2)                     # красное основание 0,75–1,0
+    if obraz:
+        p, p['obraz_prizhato'] = primenit_obraz(p, obraz, PREDELY_OBRAZA, UKLON_OBRAZA[stil])
+        p['u0'] = sn(SU_D / 2.0 - p['Wb'] / 2.0)
+        p['u1'] = sn(p['u0'] + p['Wb'])
+        p['v0'] = sn(SV_D / 2.0 - p['Db'] / 2.0)
+        p['v1'] = sn(p['v0'] + p['Db'])
     return p
 
 
-def sobrat(zerno, chast=None, prosvet=None, zemlya=None, sad_k=None, stil='kolybel'):
+def sobrat(zerno, chast=None, prosvet=None, zemlya=None, sad_k=None, stil='kolybel', obraz=None):
     """→ (паспорт, план, детали). zemlya(u, v) — высота земли относительно основания дома (для вещей двора); без неё — 0.
-    stil — облик земли ('kolybel' | 'mangala')."""
-    p = parametry(zerno, chast, prosvet, sad_k, stil)
+    stil — облик земли ('kolybel' | 'mangala'); obraz — числа облика с картинки (obraz.py), в пределах PREDELY_OBRAZA."""
+    p = parametry(zerno, chast, prosvet, sad_k, stil, obraz)
     mg = stil == 'mangala'
     r = random.Random(p['zerno_melochej'])
     D = Detali()

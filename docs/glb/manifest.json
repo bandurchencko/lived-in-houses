@@ -385,6 +385,122 @@
      "ok": true
     }
    ]
+  },
+  {
+   "file": "obraz/dom-kuznya/dom.glb",
+   "title": "From a picture · forge-house concept",
+   "title_ru": "По картинке · рисунок дома-кузни",
+   "picture": "obraz/dom-kuznya/kartinka.jpg",
+   "triangles": 16812,
+   "checks_passed": true,
+   "checks": [
+    {
+     "what": "все комнаты достижимы с улицы",
+     "ok": true
+    },
+    {
+     "what": "есть дверь во двор",
+     "ok": true
+    },
+    {
+     "what": "кузня доступна (с улицы или из зала)",
+     "ok": true
+    },
+    {
+     "what": "галерея (терраса) доступна",
+     "ok": true
+    },
+    {
+     "what": "у жилых комнат есть окна",
+     "ok": true
+    },
+    {
+     "what": "лестница не круче 38° (34.0°)",
+     "ok": true
+    },
+    {
+     "what": "ступень ≤ 0,19 м (0.189)",
+     "ok": true
+    },
+    {
+     "what": "проступь ≥ 0,27 м (0.280)",
+     "ok": true
+    },
+    {
+     "what": "ширина марша ≥ 1,2 м (1.25)",
+     "ok": true
+    },
+    {
+     "what": "двери не уже 0,95 м",
+     "ok": true
+    },
+    {
+     "what": "входная дверь ≥ 1,2 м",
+     "ok": true
+    },
+    {
+     "what": "у очага и горна есть труба",
+     "ok": true
+    },
+    {
+     "what": "вид от входа на очаг открыт",
+     "ok": true
+    },
+    {
+     "what": "вид от входа на общий стол открыт",
+     "ok": true
+    },
+    {
+     "what": "вид от общего стола на очаг открыт",
+     "ok": true
+    },
+    {
+     "what": "коробки деталей невырожденные",
+     "ok": true
+    }
+   ]
+  },
+  {
+   "file": "obraz/ulica-k-vode/dom.glb",
+   "title": "From a picture · village street concept",
+   "title_ru": "По картинке · рисунок улицы села",
+   "picture": "obraz/ulica-k-vode/kartinka.jpg",
+   "triangles": 15668,
+   "checks_passed": true,
+   "checks": [
+    {
+     "what": "все комнаты достижимы с улицы",
+     "ok": true
+    },
+    {
+     "what": "есть дверь во двор",
+     "ok": true
+    },
+    {
+     "what": "у жилых комнат есть окна",
+     "ok": true
+    },
+    {
+     "what": "двери не уже 0,95 м",
+     "ok": true
+    },
+    {
+     "what": "входная дверь ≥ 1,2 м",
+     "ok": true
+    },
+    {
+     "what": "у очага и горна есть труба",
+     "ok": true
+    },
+    {
+     "what": "вид от входа в горницу открыт",
+     "ok": true
+    },
+    {
+     "what": "коробки деталей невырожденные",
+     "ok": true
+    }
+   ]
   }
  ]
 }
