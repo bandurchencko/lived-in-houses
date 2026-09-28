@@ -128,10 +128,11 @@ function zagruzitUrl(url, imya) {
 
 // фактуры (Poly Haven, CC0): место материала → набор по облику дома; оттенок — цвет облика или картинки
 const STILI = {
-  mangala: { m00: 'red_sandstone_wall', m01: 'white_stucco', m02: 'medieval_wood', m03: 'clay_roof_tiles_02',
-             m09: 'rough_wood', m11: 'red_sandstone_pavement', zemlya: 'rocky_terrain_02' },
+  mangala: { m00: 'coral_stone_wall', m01: 'white_stucco', m02: 'medieval_wood', m03: 'clay_roof_tiles_02',
+             m09: 'rough_wood', m11: 'red_sandstone_pavement', zemlya: 'forest_ground_04' },
   kolybel: { m00: 'old_stone_wall', m01: 'patterned_clay_plaster', m02: 'medieval_wood', m03: 'reed_roof_04',
              m09: 'rough_wood', m11: 'cobblestone_floor_01', zemlya: 'rocky_terrain_02' } };
+const ZEMLYA = { mangala: 0xb09472, kolybel: 0x7b8a52 };             // земля по облику: сухая пыльная — зелёная
 let TEKSTURY = null;
 const tl = new THREE.TextureLoader(), keshTekstur = {};
 const tekstury = fetch('tekstury/tekstury.json').then(r => r.json()).then(t => { TEKSTURY = t; }).catch(() => {});
@@ -153,13 +154,15 @@ function oblikPoKryshe(dom) {                                   // свой до
   return krysha && krysha.g > krysha.r * 0.72 ? 'kolybel' : 'mangala';
 }
 function odet(dom, d) {
-  const nabory = STILI[(d && d.style) || oblikPoKryshe(dom)] || STILI.mangala;
+  const oblik = (d && d.style) || oblikPoKryshe(dom);
+  const nabory = STILI[oblik] || STILI.mangala;
   const gotovo = new Set();
   dom.traverse(o => {
     if (!o.isMesh || gotovo.has(o.material)) return;
     gotovo.add(o.material);
     // цвета облика записаны «как видит глаз» (sRGB), а glTF читает их как линейные — перевести, иначе всё выцветает
     o.material.color.convertSRGBToLinear();
+    if (o.material.name === 'zemlya' && ZEMLYA[oblik]) o.material.color.setHex(ZEMLYA[oblik]);
     if (!TEKSTURY) return;
     const imya = nabory[o.material.name];
     const t = imya && TEKSTURY[imya];

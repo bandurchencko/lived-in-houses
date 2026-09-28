@@ -119,5 +119,27 @@
   ],
   "rel": "rocky_terrain_02_rel.jpg",
   "sher": "rocky_terrain_02_sher.jpg"
+ },
+ "coral_stone_wall": {
+  "shag_m": 1.8,
+  "cvet": "coral_stone_wall_cvet.jpg",
+  "srednij": [
+   0.5649,
+   0.5134,
+   0.4486
+  ],
+  "rel": "coral_stone_wall_rel.jpg",
+  "sher": "coral_stone_wall_sher.jpg"
+ },
+ "forest_ground_04": {
+  "shag_m": 4.0,
+  "cvet": "forest_ground_04_cvet.jpg",
+  "srednij": [
+   0.4158,
+   0.3512,
+   0.2646
+  ],
+  "rel": "forest_ground_04_rel.jpg",
+  "sher": "forest_ground_04_sher.jpg"
  }
 }
