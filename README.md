@@ -74,6 +74,28 @@ Two families today: **tavern with forge** (four compositions) and **house with a
 shed, beds, wattle fence), in two styles — **red stone** (lime plaster, dark timber, terracotta tiles) and **thatched
 cottage** (cream clay, dark half-timbering, thick thatch). All seven examples pass all of their checks.
 
+## From a picture to a house: who does what
+
+The generator itself does not look at pictures. It reads a **passport**: the family (tavern, house with a yard), the parts
+(porch, garden, workshop, gallery) and the **style numbers** — plinth height, window sizes, roof type and pitch, eaves,
+materials and colours. Pictures come in one step earlier:
+
+1. **You show a reference** — a photo, a sketch, a concept painting — to an art director. For us that is Astra (an AI
+   that can see images) together with the owner; it can just as well be you, or any AI that reads images.
+2. **The art director turns the picture into numbers**: "red stone plinth 0.6–0.9 m, windows 0.65–0.95 m with shutters,
+   hip roof at 22–30°, a gallery along the front". That is the style file (`stil_mangala.py` is our example).
+3. **The generator builds as many houses as you like in that style** — every seed a new one, every one with a real
+   interior and passing its checks. A second per house.
+4. **You look** (the browser viewer or your engine) and say what is off — and the numbers change, not the houses.
+5. *(next releases)* **The settlement planner** places the houses along streets, around a square, on terraces.
+
+**Can it make a house straight from a photo?** Almost. An AI that reads images can fill in the passport from a photo by
+itself — a small script, the generator stays the same — and can then compare its render with the photo and correct the
+numbers. Two honest limits: the generator builds only what its rules know (a photo of a cathedral gives the nearest house
+it knows, in the cathedral's colours and proportions — not the cathedral), and the inside of a house is never in a photo:
+the generator invents a believable interior by its rules. That is the difference from image-to-3D AI: those copy the
+outer shape and give you a statue; this one follows the picture's style and gives you a house you can live in.
+
 ## Engines, formats, requirements
 
 | | |
