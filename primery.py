@@ -42,13 +42,37 @@ def main():
         pr = proverit(pas, plan, D)
         svodka = dom_v_glb(D, os.path.join(PAPKA, imya + '.glb'), stil, True, plan=plan)
         ok = all(x['ok'] for x in pr)
-        spisok.append({'file': imya + '.glb', 'title': en, 'title_ru': ru, 'details': len(D.spisok),
+        spisok.append({'file': imya + '.glb', 'title': en, 'title_ru': ru, 'style': stil, 'details': len(D.spisok),
                        'triangles': sum(svodka.values()), 'checks_passed': ok,
                        'checks': [{'what': x['chto'], 'ok': x['ok']} for x in pr]})
         print('%-26s деталей %4d, треугольников %6d, проверки %s' % (imya, len(D.spisok), sum(svodka.values()),
                                                                     'зелёные' if ok else 'КРАСНЫЕ'))
+    spisok += po_kartinkam()
     json.dump({'houses': spisok}, open(os.path.join(PAPKA, 'manifest.json'), 'w', encoding='utf-8'), ensure_ascii=False,
               indent=1)
+
+
+def po_kartinkam():
+    """Дома по картинкам (docs/obraz/<имя>/: картинка, паспорт, который прочёл ИИ) — пересобрать по паспорту."""
+    from generator_domov import obraz
+    koren = os.path.join(os.path.dirname(PAPKA), 'obraz')
+    out = []
+    podpisi = {'dom-kuznya': ('From a picture · forge-house concept', 'По картинке · рисунок дома-кузни'),
+               'ulica-k-vode': ('From a picture · village street concept', 'По картинке · рисунок улицы села')}
+    for imya in sorted(os.listdir(koren)) if os.path.isdir(koren) else []:
+        ps = json.load(open(os.path.join(koren, imya, 'pasport.json'), encoding='utf-8'))
+        pas = ps['pasport_kartinki']
+        pasport, plan, D, otchet = obraz.postroit(pas, ps['zerno'])
+        stil = obraz.normalizovat(pas)['stil']
+        svodka = dom_v_glb(D, os.path.join(koren, imya, 'dom.glb'), stil, True, plan=plan, cveta=pas.get('cveta'))
+        en, ru = podpisi.get(imya, ('From a picture · ' + imya, 'По картинке · ' + imya))
+        out.append({'file': 'obraz/%s/dom.glb' % imya, 'title': en, 'title_ru': ru, 'style': stil, 'colors': pas.get('cveta'),
+                    'picture': 'obraz/%s/kartinka.jpg' % imya, 'details': len(D.spisok), 'triangles': sum(svodka.values()),
+                    'checks_passed': all(x['ok'] for x in otchet['proverki']),
+                    'checks': [{'what': x['chto'], 'ok': x['ok']} for x in otchet['proverki']]})
+        print('%-26s по картинке, зерно %d, проверки %s' % (imya, otchet['zerno'],
+                                                           'зелёные' if out[-1]['checks_passed'] else 'КРАСНЫЕ'))
+    return out
 
 
 if __name__ == '__main__':

@@ -1,0 +1,123 @@
+{
+ "red_sandstone_wall": {
+  "shag_m": 2.0,
+  "cvet": "red_sandstone_wall_cvet.jpg",
+  "srednij": [
+   0.555,
+   0.4933,
+   0.4235
+  ],
+  "rel": "red_sandstone_wall_rel.jpg",
+  "sher": "red_sandstone_wall_sher.jpg"
+ },
+ "white_stucco": {
+  "shag_m": 2.5,
+  "cvet": "white_stucco_cvet.jpg",
+  "srednij": [
+   0.8435,
+   0.8274,
+   0.8144
+  ],
+  "rel": "white_stucco_rel.jpg",
+  "sher": "white_stucco_sher.jpg"
+ },
+ "patterned_clay_plaster": {
+  "shag_m": 2.5,
+  "cvet": "patterned_clay_plaster_cvet.jpg",
+  "srednij": [
+   0.6461,
+   0.5684,
+   0.5005
+  ],
+  "rel": "patterned_clay_plaster_rel.jpg",
+  "sher": "patterned_clay_plaster_sher.jpg"
+ },
+ "medieval_wood": {
+  "shag_m": 1.6,
+  "cvet": "medieval_wood_cvet.jpg",
+  "srednij": [
+   0.4505,
+   0.4059,
+   0.3622
+  ],
+  "rel": "medieval_wood_rel.jpg",
+  "sher": "medieval_wood_sher.jpg"
+ },
+ "rough_wood": {
+  "shag_m": 1.6,
+  "cvet": "rough_wood_cvet.jpg",
+  "srednij": [
+   0.417,
+   0.3834,
+   0.3414
+  ],
+  "rel": "rough_wood_rel.jpg",
+  "sher": "rough_wood_sher.jpg"
+ },
+ "clay_roof_tiles_02": {
+  "shag_m": 2.0,
+  "cvet": "clay_roof_tiles_02_cvet.jpg",
+  "srednij": [
+   0.57,
+   0.3126,
+   0.1685
+  ],
+  "rel": "clay_roof_tiles_02_rel.jpg",
+  "sher": "clay_roof_tiles_02_sher.jpg"
+ },
+ "reed_roof_04": {
+  "shag_m": 2.0,
+  "cvet": "reed_roof_04_cvet.jpg",
+  "srednij": [
+   0.6116,
+   0.5272,
+   0.4032
+  ],
+  "rel": "reed_roof_04_rel.jpg",
+  "sher": "reed_roof_04_sher.jpg"
+ },
+ "old_stone_wall": {
+  "shag_m": 2.0,
+  "cvet": "old_stone_wall_cvet.jpg",
+  "srednij": [
+   0.5278,
+   0.4652,
+   0.3884
+  ],
+  "rel": "old_stone_wall_rel.jpg",
+  "sher": "old_stone_wall_sher.jpg"
+ },
+ "red_sandstone_pavement": {
+  "shag_m": 2.0,
+  "cvet": "red_sandstone_pavement_cvet.jpg",
+  "srednij": [
+   0.3998,
+   0.3492,
+   0.2958
+  ],
+  "rel": "red_sandstone_pavement_rel.jpg",
+  "sher": "red_sandstone_pavement_sher.jpg"
+ },
+ "cobblestone_floor_01": {
+  "shag_m": 2.0,
+  "cvet": "cobblestone_floor_01_cvet.jpg",
+  "srednij": [
+   0.5603,
+   0.5101,
+   0.4306
+  ],
+  "rel": "cobblestone_floor_01_rel.jpg",
+  "sher": "cobblestone_floor_01_sher.jpg"
+ },
+ "rocky_terrain_02": {
+  "shag_m": 4.0,
+  "cvet": "rocky_terrain_02_cvet.jpg",
+  "srednij": [
+   0.3132,
+   0.3076,
+   0.1101
+  ],
+  "rel": "rocky_terrain_02_rel.jpg",
+  "sher": "rocky_terrain_02_sher.jpg"
+ }
+}

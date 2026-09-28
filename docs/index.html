@@ -53,6 +53,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 const RU = (navigator.language || '').startsWith('ru');
 const T = RU ? { orbit: 'Мышь: вращать, колесо — ближе.', tri: 'Треугольников', checks: 'Проверки пройдены',
@@ -76,6 +77,8 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.localClippingEnabled = true;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;          // киношная цветокоррекция
+renderer.toneMappingExposure = 1.05;
 el.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -83,8 +86,16 @@ scene.background = new THREE.Color(0xbfd3e3);
 const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 500);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-scene.add(new THREE.HemisphereLight(0xfff3e2, 0x8f7c5c, 1.55));     // тёплый рассеянный свет: стены в тени — не голубые
-const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
+const nebo = new THREE.HemisphereLight(0xfff3e2, 0x8f7c5c, 1.55);   // пока не пришла панорама — тёплый рассеянный свет
+scene.add(nebo);
+new RGBELoader().load('tekstury/nebo.hdr', hdr => {                  // свет от панорамы неба (Poly Haven, CC0)
+  const pm = new THREE.PMREMGenerator(renderer);
+  scene.environment = pm.fromEquirectangular(hdr).texture;
+  scene.environmentIntensity = 0.85;
+  nebo.intensity = 0.35;
+  hdr.dispose(); pm.dispose();
+});
+const sun = new THREE.DirectionalLight(0xffe8c8, 2.6);
 sun.position.set(-16, 24, -20);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
@@ -97,7 +108,8 @@ const loader = new GLTFLoader();
 const sel = document.getElementById('dom');
 sel.onchange = () => zagruzit(sel.value);
 const svoj = new URLSearchParams(location.search).get('dom');       // ?dom=путь/к/дому.glb — свой дом
-fetch(papka + 'manifest.json').then(r => r.json()).then(m => {
+fetch(papka + 'manifest.json').then(r => r.json()).then(async m => {
+  await tekstury;
   DOMA = m.houses;
   for (const d of DOMA) { const o = document.createElement('option'); o.value = d.file; o.textContent = RU ? d.title_ru : d.title; sel.appendChild(o); }
   if (svoj) zagruzitUrl(svoj, svoj.split('/').pop()); else zagruzit(DOMA[0].file);
@@ -114,6 +126,58 @@ function zagruzitUrl(url, imya) {
   zagruzit(url);
 }
 
+// фактуры (Poly Haven, CC0): место материала → набор по облику дома; оттенок — цвет облика или картинки
+const STILI = {
+  mangala: { m00: 'red_sandstone_wall', m01: 'white_stucco', m02: 'medieval_wood', m03: 'clay_roof_tiles_02',
+             m09: 'rough_wood', m11: 'red_sandstone_pavement', zemlya: 'rocky_terrain_02' },
+  kolybel: { m00: 'old_stone_wall', m01: 'patterned_clay_plaster', m02: 'medieval_wood', m03: 'reed_roof_04',
+             m09: 'rough_wood', m11: 'cobblestone_floor_01', zemlya: 'rocky_terrain_02' } };
+let TEKSTURY = null;
+const tl = new THREE.TextureLoader(), keshTekstur = {};
+const tekstury = fetch('tekstury/tekstury.json').then(r => r.json()).then(t => { TEKSTURY = t; }).catch(() => {});
+function tekstura(fajl, shag, cvet) {
+  const k = fajl;
+  if (!keshTekstur[k]) {
+    const t = tl.load('tekstury/' + fajl);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.repeat.set(1 / shag, 1 / shag);
+    t.colorSpace = cvet ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    keshTekstur[k] = t;
+  }
+  return keshTekstur[k];
+}
+function oblikPoKryshe(dom) {                                   // свой дом без описания: камыш желтее черепицы
+  let krysha = null;
+  dom.traverse(o => { if (o.isMesh && o.material.name === 'm03') krysha = o.material.color; });
+  return krysha && krysha.g > krysha.r * 0.72 ? 'kolybel' : 'mangala';
+}
+function odet(dom, d) {
+  const nabory = STILI[(d && d.style) || oblikPoKryshe(dom)] || STILI.mangala;
+  const gotovo = new Set();
+  dom.traverse(o => {
+    if (!o.isMesh || gotovo.has(o.material)) return;
+    gotovo.add(o.material);
+    // цвета облика записаны «как видит глаз» (sRGB), а glTF читает их как линейные — перевести, иначе всё выцветает
+    o.material.color.convertSRGBToLinear();
+    if (!TEKSTURY) return;
+    const imya = nabory[o.material.name];
+    const t = imya && TEKSTURY[imya];
+    if (!t) return;
+    const m = o.material;
+    m.map = tekstura(t.cvet, t.shag_m, true);
+    if (t.rel) { m.normalMap = tekstura(t.rel, t.shag_m, false); m.normalScale.set(0.9, 0.9); }
+    if (t.sher) { m.roughnessMap = tekstura(t.sher, t.shag_m, false); m.roughness = 1.0; }
+    m.metalness = 0.0;
+    // оттенок: средний цвет фактуры → цвет облика (или картинки), в линейном пространстве
+    const sr = new THREE.Color().setRGB(t.srednij[0], t.srednij[1], t.srednij[2], THREE.SRGBColorSpace);
+    const c = m.color;
+    c.setRGB(THREE.MathUtils.clamp(c.r / Math.max(sr.r, 0.02), 0.35, 2.4),
+             THREE.MathUtils.clamp(c.g / Math.max(sr.g, 0.02), 0.35, 2.4),
+             THREE.MathUtils.clamp(c.b / Math.max(sr.b, 0.02), 0.35, 2.4));
+    m.needsUpdate = true;
+  });
+}
 function zagruzit(f, gotovo) {
   loader.load(/^(blob:|https?:|\/|\.)/.test(f) || f.includes('/') ? f : papka + f, g => {
     if (tekushchij) scene.remove(tekushchij);
@@ -126,6 +190,7 @@ function zagruzit(f, gotovo) {
         o.material.side = o.material.transparent ? THREE.DoubleSide : THREE.FrontSide;
       }
     });
+    odet(tekushchij, DOMA.find(x => x.file === f));
     scene.add(tekushchij);
     const box = new THREE.Box3();                    // рамка дома без плиты земли
     tekushchij.traverse(o => { if (o.isMesh && !(o.name || '').startsWith('zemlya')) box.expandByObject(o); });

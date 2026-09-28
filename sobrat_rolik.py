@@ -40,7 +40,7 @@ def main(kadry, prohod_a, prohod_b, vyhod):
     ]
     cmd = ['ffmpeg', '-y', '-hide_banner', '-loglevel', 'error', '-i', prohod_a, '-i', prohod_b,
            '-framerate', '30', '-i', kadry + '/kadr-%04d.png',
-           '-filter_complex', ';'.join(fg), '-map', '[v]', '-c:v', 'libx264', '-crf', '19', '-preset', 'medium',
+           '-filter_complex', ';'.join(fg), '-map', '[v]', '-c:v', 'libx264', '-crf', '24', '-preset', 'slow',
            '-pix_fmt', 'yuv420p', '-movflags', '+faststart', vyhod]
     subprocess.run(cmd, check=True)
     print('ролик:', vyhod)

@@ -128,7 +128,7 @@ this one follows the picture's style and gives you a house you can live in.
 | **Web** | `docs/index.html` — a three.js viewer (the live demo above). |
 | **Your own engine** | The detail list is engine-free JSON of simple solids (boxes, walls with openings, beams, roof planes, profiles, cylinders, spheres, windows, eave tiles) — a builder for any engine is a few hundred lines. |
 
-**Not there yet:** textures and UVs in the glTF (materials are flat colours for now), LODs, only two families.
+**Textures:** the `.glb` carries UVs (metres, laid along each face — tiles run along the eaves, stones in courses) and flat PBR colours; the viewer dresses it with CC0 textures from [Poly Haven](https://polyhaven.com) — stone, plaster, timber, tiles, thatch, paving — tinted to the house's colours, and lights it with a CC0 sky (`docs/tekstury/`). **Not there yet:** textures embedded in the `.glb`, LODs, only two families.
 
 ## Quick start
 
@@ -210,4 +210,4 @@ more will come as the game needs them.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Textures and the sky in `docs/tekstury/` are from [Poly Haven](https://polyhaven.com), CC0.

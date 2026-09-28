@@ -347,8 +347,9 @@ class Sborka:
                 F = np.vstack(Fs)
                 V = V[:, [0, 2, 1]]                        # (u, v, w) → (x = u, y = w, z = v)
                 F = F[:, ::-1]                             # перестановка осей переворачивает обход
-                mesh = trimesh.Trimesh(V, F, process=False)
-                mesh.unmerge_vertices()                    # грани плоские, без сглаживания по углам
+                Vf = V[F].reshape(-1, 3)                   # грани плоские: у каждой свои вершины (без сглаживания углов)
+                Ff = np.arange(len(Vf)).reshape(-1, 3)
+                uv = razvertka(Vf, Ff)
                 if m < 0:
                     cvet, sher, met, sv = (0.42, 0.40, 0.30, 1), 1.0, 0.0, 0.0
                 else:
@@ -358,10 +359,30 @@ class Sborka:
                     baseColorFactor=[int(round(255 * x)) for x in cvet], roughnessFactor=sher, metallicFactor=met,
                     emissiveFactor=[cvet[0] * sv, cvet[1] * sv, cvet[2] * sv] if sv else None,
                     alphaMode='BLEND' if cvet[3] < 1 else 'OPAQUE', doubleSided=cvet[3] < 1)
-                mesh.visual = trimesh.visual.TextureVisuals(material=mat)
+                mesh = trimesh.Trimesh(Vf, Ff, process=False)
+                mesh.visual = trimesh.visual.TextureVisuals(uv=uv, material=mat)
                 sc.add_geometry(mesh, node_name='%s__m%02d' % (g, max(m, 0)), geom_name='%s__m%02d' % (g, max(m, 0)),
                                 parent_node_name=g)
         return sc
+
+
+def razvertka(V, F):
+    """Развёртка в метрах в плоскости каждой грани (glTF: y — вверх): первая ось — горизонталь грани, вторая — вверх
+    по ней (черепица идёт вдоль карниза, кладка — рядами); у лежачих граней — оси x и z. Фактуру кладёт просмотр
+    (шаг плитки — у набора фактур)."""
+    a, b, c = V[F[:, 0]], V[F[:, 1]], V[F[:, 2]]
+    n = np.cross(b - a, c - a)
+    n /= np.maximum(np.linalg.norm(n, axis=1, keepdims=True), 1e-12)
+    vverh = np.array([0.0, 1.0, 0.0])
+    t = np.cross(vverh, n)
+    lezh = np.linalg.norm(t, axis=1) < 0.25                 # почти лежачая грань — оси x и z
+    t[lezh] = np.array([1.0, 0.0, 0.0])
+    t /= np.maximum(np.linalg.norm(t, axis=1, keepdims=True), 1e-12)
+    bb = np.cross(n, t)
+    bb[lezh] = np.array([0.0, 0.0, 1.0])
+    T, B = np.repeat(t, 3, axis=0), np.repeat(bb, 3, axis=0)
+    P = V[F].reshape(-1, 3)
+    return np.stack([np.einsum('ij,ij->i', P, T), np.einsum('ij,ij->i', P, B)], axis=1)
 
 
 def dom_v_glb(D, put, stil='mangala', zemlya=None, zerno=27, plan=None, cveta=None):
