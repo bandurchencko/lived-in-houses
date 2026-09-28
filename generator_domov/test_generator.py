@@ -110,3 +110,17 @@ def test_kosyaki_ne_zapodlico_s_otkosom():
             for p, v in dveri:
                 if w0 < p['w1'] and w1 > p['w0'] and v0 < v[3] and v1 > v[2] and u0 < p['a1'] + 0.2 and u1 > p['a0'] - 0.2:
                     assert abs(u1 - p['a0']) > 0.005 and abs(u0 - p['a1']) > 0.005, (p, d['b'])
+
+
+@pytest.mark.parametrize('zerno', range(0, 40, 3))
+def test_lestnicy_i_poly_ne_migayut(zerno):
+    """28.09: ступени строились коробками «до конца марша» — боковые грани всех ступеней в одной плоскости при
+    чередовании доски и бруса мигали при проходе камерой. Ни одной разноцветной пары граней в одной плоскости у полов и
+    лестниц; прочих мелких (спрятанных в стенах) — не больше 12 на дом."""
+    from generator_domov import dom_dvor
+    from generator_domov.proverki import sovpadayushchie_grani
+    for pas, plan, D in (traktir.sobrat(zerno), dom_dvor.sobrat(zerno + 1000)):
+        raz = [x for x in sovpadayushchie_grani(D) if D.spisok[x[3]]['m'] != D.spisok[x[4]]['m']]
+        poly = [x for x in raz if D.spisok[x[3]]['g'] == 'poly' and D.spisok[x[4]]['g'] == 'poly']
+        assert not poly, [(D.spisok[x[3]]['b'], D.spisok[x[4]]['b']) for x in poly[:3]]
+        assert len(raz) <= 12, len(raz)

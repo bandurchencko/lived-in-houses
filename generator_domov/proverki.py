@@ -142,3 +142,29 @@ def _otrezok_v_korobke(a, b, box):
         if t0 > t1:
             return False
     return True
+
+
+def sovpadayushchie_grani(D, min_ploshchad=4e-4):
+    """Грани коробок (kor) в одной плоскости: одна ось, одна координата, одно направление нормали, перекрытие больше
+    min_ploshchad м² — движок не знает, какую рисовать, и при движении камеры они мигают (z-fighting; 28.09: косяки у
+    откоса, ступени «до конца марша» при чередовании доски и бруса). → [(ось, координата, нормаль, i, j, площадь)];
+    нижние грани у земли (w ≤ 0,6 м, нормаль вниз) не в счёт — их не видно."""
+    import itertools
+    idx = {}
+    for i, d in enumerate(D.spisok):
+        if d['t'] != 'kor':
+            continue
+        u0, u1, v0, v1, w0, w1 = d['b']
+        pr = {0: (v0, v1, w0, w1), 1: (u0, u1, w0, w1), 2: (u0, u1, v0, v1)}
+        for (os_, c, zn) in ((0, u0, -1), (0, u1, 1), (1, v0, -1), (1, v1, 1), (2, w0, -1), (2, w1, 1)):
+            if os_ == 2 and zn == -1 and c <= 0.6:
+                continue
+            idx.setdefault((os_, round(c, 3), zn), []).append((i, pr[os_]))
+    out = []
+    for (os_, c, zn), L in idx.items():
+        for (i, a), (j, b) in itertools.combinations(L, 2):
+            x = min(a[1], b[1]) - max(a[0], b[0])
+            y = min(a[3], b[3]) - max(a[2], b[2])
+            if x > 0 and y > 0 and x * y > min_ploshchad:
+                out.append((os_, c, zn, i, j, round(x * y, 4)))
+    return out

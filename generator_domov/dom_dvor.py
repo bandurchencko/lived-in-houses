@@ -260,7 +260,7 @@ def sobrat(zerno, chast=None, prosvet=None, zemlya=None, sad_k=None, stil='kolyb
     D.istochnik('pech', (pch[0] + pch[1]) / 2.0, pch[2] + 0.15, P + 0.93, 0.3, 70.0, (255, 130, 60), False)
     tu, tv_ = (pch[0] + pch[1]) / 2.0, min(pch[3] - 0.4, vc + 0.9)
     w_kr = w_krovli(prof, v0, v1, tv_ + 0.3) if tv_ > vc else WR
-    D.kor('krysha', KAM, tu - 0.3, tu + 0.3, tv_ - 0.3, tv_ + 0.3, F1, max(w_kr + 0.9, WR + 0.3), 0.012)
+    D.kor('krysha', KAM, tu - 0.3, tu + 0.3, tv_ - 0.3, tv_ + 0.3, F1 + 0.012, max(w_kr + 0.9, WR + 0.3), 0.012)  # низ — внутри перекрытия
     D.kor('krysha', KAM, tu - 0.37, tu + 0.37, tv_ - 0.37, tv_ + 0.37, max(w_kr + 0.9, WR + 0.3), max(w_kr + 0.9, WR + 0.3) + 0.1)
     plan['ochagi'] = [{'vid': 'pech', 'b': list(pch), 'truba': True}]
 

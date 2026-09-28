@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.3 — 28 September 2026 (night)
+
+- **Stairs no longer flicker** — every step was a box from its own nosing to the end of the flight, so the side faces
+  of all steps lay in one plane while the materials alternated (board / beam, paving / stone): the side of the stair
+  shimmered when the camera moved. Each step is now a block under its own tread; the cheeks of the niche under the
+  outer stair are 1 cm narrower than the flight; the chimney of houses with a yard starts inside the ceiling.
+- **Coplanar-face check** — `proverki.sovpadayushchie_grani(D)` finds box faces in one plane (same axis, coordinate
+  and normal, overlapping); a test keeps floors and stairs free of them and caps small hidden ones per house.
+
 ## 0.3.2 — 28 September 2026 (night)
 
 - **Door jambs no longer flicker** — the jambs sat flush with the wall reveal, two faces in one plane, and flickered

@@ -386,9 +386,10 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
         x += sn(r.uniform(1.0, 1.2))
     D.brus('poly', BRUS, (ui0 + L_sh, (vi0 + kb_v0) / 2.0, F1 - 0.36), (ui1, (vi0 + kb_v0) / 2.0, F1 - 0.36), 0.3, 0.3, (0, 1, 0))
     n_st = max(10, int(round(podem / 0.19)))
-    for k in range(n_st):
-        va = st_v0 + dl * k / n_st
-        D.kor('poly', DOSKI if k % 2 else BRUS, ui0, ui0 + L_sh, va, st_v1, P, P + podem * (k + 1) / n_st, 0.006)
+    for k in range(n_st):                # ступень — столбик под своей проступью (28.09: коробки «до конца марша» мигали
+        va = st_v0 + dl * k / n_st           # боковыми гранями в одной плоскости при чередовании доски и бруса)
+        vb = st_v1 if k == n_st - 1 else st_v0 + dl * (k + 1) / n_st
+        D.kor('poly', DOSKI if k % 2 else BRUS, ui0, ui0 + L_sh, va, vb, P, P + podem * (k + 1) / n_st, 0.006)
     for k in range(0, n_st + 1, 3):
         va = st_v0 + dl * k / n_st
         D.brus('poly', BRUS, (ui0 + L_sh - 0.06, va, P + podem * k / n_st), (ui0 + L_sh - 0.06, va, P + podem * k / n_st + 0.95),
@@ -1071,15 +1072,17 @@ def _lestnica_naruzh(D, LU0, LU1, v_start, zn, W, ugol=34.0, plosh=1.25, rr=None
         y0, y1 = sorted((v_start + zn * x0, v_start + zn * x1))
         D.kor('obolochka', m, a0, a1, y0, y1, w0, w1, fs)
     n1 = int(round(h1 / 0.19))
-    for k in range(n1):
-        kor_v(MOSH if k % 3 else KAM, d1 * k / n1, d1, 0.0, h1 * (k + 1) / n1)
+    for k in range(n1):                  # ступень — столбик под своей проступью (не «до площадки»: грани в одной плоскости)
+        kor_v(MOSH if k % 3 else KAM, d1 * k / n1, d1 * (k + 1) / n1, 0.0, h1 * (k + 1) / n1)
     kor_v(KAM, d1, d1 + plosh, 0.0, h1, 0.01)                                         # площадка на каменном столбе
     x2 = d1 + plosh
     n2 = int(round((W - h1) / 0.19))
     for k in range(n2):
-        kor_v(MOSH if k % 3 else KAM, x2 + d2 * k / n2, x2 + d2, h1 + (W - h1) * k / n2 - 0.35, h1 + (W - h1) * (k + 1) / n2)
-    kor_v(KAM, x2, x2 + 0.45, 0.0, h1, 0.0)                                           # щёки ниши под вторым маршем
-    kor_v(KAM, x2 + d2 - 0.45, x2 + d2, 0.0, W - 0.35, 0.0)
+        kor_v(MOSH if k % 3 else KAM, x2 + d2 * k / n2, x2 + d2 * (k + 1) / n2, h1 + (W - h1) * k / n2 - 0.35,
+              h1 + (W - h1) * (k + 1) / n2)
+    # щёки ниши под вторым маршем — на 1 см уже марша с каждой стороны: боковые грани не совпадают со ступенями
+    kor_v(KAM, x2, x2 + 0.45, 0.0, h1, 0.0, LU0 + 0.01, LU1 - 0.01)
+    kor_v(KAM, x2 + d2 - 0.45, x2 + d2, 0.0, W - 0.35, 0.0, LU0 + 0.01, LU1 - 0.01)
     rr = rr or random.Random(int(W * 1000) + int(LU1 * 100))
     for (a, b, w0, w1) in ((0.0, d1, 0.0, h1), (x2, x2 + d2, h1, W)):
         n = 6
