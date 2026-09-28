@@ -91,3 +91,22 @@ def test_otrazhenie_simmetrichno():
             b = [d['b'] for d in D.spisok if d['t'] == 'kor']
             assert all(x[0] < x[1] for x in b)
             break
+
+
+def test_kosyaki_ne_zapodlico_s_otkosom():
+    """28.09: косяк заподлицо с откосом стены мигал при проходе (две грани в одной плоскости) — косяки выступают в проём."""
+    from generator_domov import dom_dvor
+    for pas, plan, D in (traktir.sobrat(13), traktir.sobrat(4), traktir.sobrat(7),
+                         dom_dvor.sobrat(1717, 'krylco', [], None, None, 'kolybel'), dom_dvor.sobrat(2020, 'masterskaya')):
+        # вырезы дверей в стенах вдоль u (фасад и зад): откос — грани u = a0 и u = a1 на глубину стены
+        vyrezy = [v for d in D.spisok if d['t'] == 'stena' for v in d.get('vyr', [])]
+        dveri = [(p, v) for p in plan['proemy'] if p['vid'].startswith('dver') and p['storona'] in ('ul', 'zad')
+                 for v in vyrezy if abs(v[0] - p['a0']) < 1e-3 and abs(v[1] - p['a1']) < 1e-3 and abs(v[4] - p['w0']) < 1e-3]
+        assert dveri
+        for d in D.spisok:
+            if d['t'] != 'kor' or d['m'] != traktir.BRUS:
+                continue
+            u0, u1, v0, v1, w0, w1 = d['b']
+            for p, v in dveri:
+                if w0 < p['w1'] and w1 > p['w0'] and v0 < v[3] and v1 > v[2] and u0 < p['a1'] + 0.2 and u1 > p['a0'] - 0.2:
+                    assert abs(u1 - p['a0']) > 0.005 and abs(u0 - p['a1']) > 0.005, (p, d['b'])

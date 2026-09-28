@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 — 28 September 2026 (night)
+
+- **Door jambs no longer flicker** — the jambs sat flush with the wall reveal, two faces in one plane, and flickered
+  (z-fighting) when the camera walked through a door. They now stand 2 cm into the opening and stop 5 mm below its
+  head, in every family; a test keeps jambs off the reveal plane. Example houses rebuilt.
+
 ## 0.3.1 — 28 September 2026 (night)
 
 - **Windows console fix** — the command-line tools (`eksport_glb`, `obraz`, `python -m generator_domov`) no longer

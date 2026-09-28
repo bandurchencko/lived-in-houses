@@ -7,7 +7,7 @@ Export to glTF in seconds, look inside in the browser, or build straight into Un
 
 [Русская версия](README.ru.md) · **[Live demo — open a house in your browser](https://bandurchencko.github.io/lived-in-houses/)** · **[Trailer, 50 s](https://bandurchencko.github.io/lived-in-houses/lived-in-houses.mp4)**
 
-**Version 0.3.1** (28 September 2026) — a house from your picture, textured browser demo, gable roofs, volumetric stone, yard trades. [What changed](CHANGELOG.md).
+**Version 0.3.2** (28 September 2026) — a house from your picture, textured browser demo, gable roofs, volumetric stone, yard trades. [What changed](CHANGELOG.md).
 
 ## In one minute
 

@@ -702,6 +702,9 @@ def _podokonnik(D, st, a0, a1, w0, u0, u1, v0, v1):
         D.kor('obolochka', KAM, u1 - 0.05, u1 + 0.09, a0 - 0.08, a1 + 0.08, w0 - 0.08, w0, 0.01)
 
 
+VYSTUP_KOSYAKA = 0.02      # косяк стоит в проёме на 2 см ближе откоса стены: грани не в одной плоскости
+
+
 def _dveri(D, proemy, u0, u1, v0, v1, F1):
     """Полотна дверей: вход зала и двери на галерею распахнуты внутрь к стене, задняя и боковые — приоткрыты."""
     for (st, a0, a1, w0, w1, vid) in proemy:
@@ -722,14 +725,16 @@ def _dveri(D, proemy, u0, u1, v0, v1, F1):
             continue
         kon = (pet[0] + shir * math.cos(ug), pet[1] + shir * math.sin(ug))
         D.brus('obolochka', BRUS, (pet[0], pet[1], w0 + h / 2), (kon[0], kon[1], w0 + h / 2), h, 0.06, (0, 0, 1), 0.006)
-        # коробка двери
+        # коробка двери: косяки выступают в проём на VYSTUP_KOSYAKA и не доходят до верха проёма на 5 мм (28.09: косяк
+        # заподлицо с откосом стены мигал при проходе камерой — две грани в одной плоскости, z-fighting)
+        kosyaki = ((a0 - 0.14, a0 + VYSTUP_KOSYAKA), (a1 - VYSTUP_KOSYAKA, a1 + 0.14))
         if st in ('ul', 'zad'):
             vv0, vv1 = (v0 - 0.06, v0 + 0.1) if st == 'ul' else (v1 - 0.1, v1 + 0.06)
-            for a in (a0 - 0.14, a1):
-                D.kor('obolochka', BRUS, a, a + 0.14, vv0, vv1, w0, w1, 0.01)
+            for (k0, k1) in kosyaki:
+                D.kor('obolochka', BRUS, k0, k1, vv0, vv1, w0, w1 - 0.005, 0.01)
         else:
-            for a in (a0 - 0.14, a1):
-                D.kor('obolochka', BRUS, u1 - 0.1, u1 + 0.06, a, a + 0.14, w0, w1, 0.01)
+            for (k0, k1) in kosyaki:
+                D.kor('obolochka', BRUS, u1 - 0.1, u1 + 0.06, k0, k1, w0, w1 - 0.005, 0.01)
 
 
 def _valma(D, p, u0, u1, v0, v1, EV, pered=0.0):
