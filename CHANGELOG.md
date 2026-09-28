@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 — 28 September 2026 (night)
+
+- **Windows console fix** — the command-line tools (`eksport_glb`, `obraz`, `python -m generator_domov`) no longer
+  crash with `UnicodeEncodeError` on a default Windows console (cp1252) when printing the summary; output is UTF-8.
+- README: an "In one minute" block — who it is for, the problem it solves, how to use it, what's next.
+
 ## 0.3 — 28 September 2026 (evening)
 
 - **Gable roof for the tavern** — a passport choice (`krysha='valma'` hip, default; `'dvuskat'` gable): ridge along the

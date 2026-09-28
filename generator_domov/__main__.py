@@ -29,6 +29,8 @@ def dom(semejstvo, zerno, vyhod, kompoz=None):
 
 
 if __name__ == '__main__':
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')   # консоль Windows (cp1252) не печатает кириллицу
     a = sys.argv[1:]
     vyhod = next((x[len('--vyhod='):] for x in a if x.startswith('--vyhod=')), 'rab/generator')
     kompoz = next((x[len('--kompoz='):] for x in a if x.startswith('--kompoz=')), None)
