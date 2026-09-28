@@ -1,0 +1,117 @@
+# Lived-in Houses
+
+**A rule-based generator of enterable village houses — floor plans, rooms, furniture and gameplay checks — for games.**
+Export to glTF in seconds, look inside in the browser, or build straight into Unreal Engine 5.
+
+> *"A house becomes interesting when its layout lets you imagine the life inside."* — Astra, our AI art-direction assistant
+
+[Русская версия](README.ru.md) · **[Live demo — open a house in your browser](https://bandurchencko.github.io/lived-in-houses/)** · **[Trailer, 43 s](https://bandurchencko.github.io/lived-in-houses/lived-in-houses.mp4)**
+
+| Tavern with forge, seed 13 | Cut at 3.3 m: the ground floor inside |
+|---|---|
+| ![Tavern with forge](docs/obrazy/cover-tavern-13.png) | ![Tavern interior](docs/obrazy/cut-tavern-13.png) |
+| **Thatched garden house, seed 1818** | **Tavern, seed 7 — another composition** |
+| ![Garden house](docs/obrazy/garden-house-1818.png) | ![Tavern seed 7](docs/obrazy/tavern-7-annex.png) |
+
+## What it does
+
+Give it a family, a seed and a style — it builds a whole house you can walk into:
+
+1. **Passport** — the seed picks numbers inside the style's ranges (plinth height, window sizes, roof pitch, eaves…) and
+   a composition (the tavern has four: *gallery*, *annex*, *corner*, *canopy*).
+2. **Floor plan** — rooms by programme (hall with a hearth and a common table, kitchen, bedrooms, storeroom, workshop or
+   forge), doors, windows, stairs, porch, gallery, yard, shed, garden.
+3. **Details without an engine** — walls with openings, floors, ceilings, roof planes, timber frame, windows with
+   shutters, eave tiles or thatch, furniture and small props — grouped as *shell / partitions / floors / roof / furniture
+   / props* (separate meshes, so lighting inside stays clean).
+4. **Checks** — a character capsule reaches every room through every door, stairs are walkable (≤ 38°, riser ≤ 0.19 m,
+   tread ≥ 0.27 m), doors ≥ 0.95 m, living rooms have windows, the hearth and the table are seen from the entrance,
+   nothing blocks a window.
+5. **Output** — glTF/GLB in about a second (this repository), or an Unreal Engine 5 build in 8–30 s per house (the
+   engine-side builder we use in our game; see *Unreal* below).
+
+Two families today: **tavern with forge** (four compositions) and **house with a yard** (porch, garden or workshop;
+shed, beds, wattle fence), in two styles — **red stone** (lime plaster, dark timber, terracotta tiles) and **thatched
+cottage** (cream clay, dark half-timbering, thick thatch). All seven examples pass all of their checks.
+
+## Quick start
+
+```bash
+pip install -r requirements.txt
+python -m pytest generator_domov -q                  # 333 tests, ~2 s
+python primery.py                                    # rebuild the examples into docs/glb
+python -m generator_domov.eksport_glb traktir 13 --kompoz=galereya --vyhod=tavern.glb
+python -m generator_domov.eksport_glb dom-dvor 1818 --chast=sad --sad=jug --stil=kolybel --vyhod=garden-house.glb
+python -m http.server 8000 --directory docs          # then open http://localhost:8000
+```
+
+Open any `.glb` in Blender, in Unreal (drag and drop) or in the viewer: toggle the roof and the walls, slide the cut
+height to look inside each floor.
+
+In Python:
+
+```python
+from generator_domov import traktir, dom_dvor
+from generator_domov.proverki import proverit
+from generator_domov.eksport_glb import dom_v_glb
+
+passport, plan, details = traktir.sobrat(13, 'galereya')      # family, seed, composition
+print(all(c['ok'] for c in proverit(passport, plan, details)))  # every check passed?
+dom_v_glb(details, 'tavern.glb', 'mangala', True, plan=plan)
+```
+
+## A note on the code
+
+The code is written in Russian transliteration (`sobrat` = build, `plan`, `detali` = details, `proverki` = checks,
+`krysha` = roof, `traktir` = tavern, `dom_dvor` = house with a yard) and its comments are in Russian: it is the working
+code of our game, published as it is. The pipeline above is the map; each module starts with a docstring describing it.
+
+| Module | What it is |
+|---|---|
+| `detali.py` | Engine-free detail records: boxes, walls with openings, beams, roof planes, profiles, cylinders, spheres |
+| `traktir.py` | Tavern with forge: passport, four compositions, rooms, furniture, forge |
+| `dom_dvor.py` | House with a yard: porch / garden / workshop, shed, beds, fence; styles |
+| `stil_mangala.py` | Style numbers of the red-stone architecture and room programmes |
+| `proverki.py` | Gameplay checks (walkability, stairs, doors, windows, views) |
+| `list_doma.py` | Plan sheets (PNG) |
+| `eksport_glb.py` | Details → glTF (GLB), grouped nodes, style colours |
+| `docs/index.html` | The browser viewer (three.js) |
+
+## Unreal
+
+In our game the same detail records are built in Unreal Engine 5.8 by a Python builder with Geometry Script: one mesh
+per group, lights at the hearth, lamps and windows, 8–30 s per house, placed on terrain by our settlement planner.
+That builder depends on our project's materials and is not part of this first release; the GLB path imports into
+Unreal directly.
+
+## Prior art — we are not the first
+
+Rule-based buildings with interiors are an old idea, and we stand on these shoulders (we found most of them *after*
+building ours — a lesson we took): Merrell et al. 2010 (room programme → floor plan → house), Lopes et al. 2010,
+Tutenel et al. 2011, Emilien et al. 2012 (villages on terrain), Daggerfall, Shadows of Doubt, THE FINALS,
+[Infinigen Indoors](https://github.com/princeton-vl/infinigen), [ProcTHOR](https://github.com/allenai/procthor),
+[Procedural-Cities](https://github.com/magnificus/Procedural-Cities), [Veloren](https://veloren.net/),
+[watabou's generators](https://watabou.itch.io/). What we have not found ready-made is this combination as an open tool
+for UE5: rural houses with a household (hearth, forge, yard, shed, garden, gallery) by seed, gameplay checks on every
+house, and a village planner on real terrain around them (coming in the next releases).
+
+## How it was made
+
+After several days of searching, we built a working generator in one night. The owner set the image and accepted the
+result; Claude (Anthropic) implemented the rules; Astra analysed the composition.
+
+- **Oleksandr Bandurchenko** — owner, direction, acceptance
+- **Claude** (Anthropic, via Claude Code) — implementation
+- **Astra** — AI assistant for art direction and visual review
+
+Part of **Сад миров · Garden of Worlds**, a fairy-tale realistic world we are building in Unreal Engine 5
+([YouTube @sadmirov](https://www.youtube.com/@sadmirov), [Telegram](https://t.me/sadmirov)).
+
+## Next
+
+Shared yards and streets → a whole village on two different sites → villages on hillside terraces. Two families today;
+more will come as the game needs them.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

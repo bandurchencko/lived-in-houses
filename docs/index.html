@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lived-in Houses</title>
+<style>
+  :root { --fon: #cfd9e0; --panel: rgba(255,255,255,0.88); --tekst: #1f2328; --akcent: #9c3d22; }
+  @media (prefers-color-scheme: dark) { :root { --fon: #1d2126; --panel: rgba(28,32,38,0.9); --tekst: #e6e6e6; --akcent: #e07a52; } }
+  html, body { margin: 0; height: 100%; background: var(--fon); color: var(--tekst); font: 14px/1.35 system-ui, sans-serif; }
+  #scena { position: fixed; inset: 0; }
+  #panel { position: fixed; top: 12px; left: 12px; background: var(--panel); border-radius: 10px; padding: 12px 14px;
+           max-width: 300px; box-shadow: 0 4px 18px rgba(0,0,0,0.18); }
+  #panel h1 { font-size: 15px; margin: 0 0 8px; }
+  #panel label { display: block; margin: 3px 0; cursor: pointer; }
+  #panel select, #panel input[type=range] { width: 100%; }
+  #panel .ryad { margin-top: 10px; }
+  #panel .podpis { font-size: 12px; opacity: 0.75; margin-top: 8px; }
+  #srez-zn { color: var(--akcent); font-weight: 600; }
+  #svernut { float: right; border: none; background: transparent; color: inherit; font-size: 16px; cursor: pointer; }
+  #panel.svernut #telo { display: none; }
+  #panel a { color: var(--akcent); }
+  #rakursy button { margin: 2px 2px 0 0; padding: 3px 7px; border: 1px solid rgba(0,0,0,0.2); border-radius: 6px;
+                    background: transparent; color: inherit; cursor: pointer; font: inherit; font-size: 12px; }
+  @media (max-width: 520px) { #panel { left: 8px; right: 8px; max-width: none; } }
+</style>
+</head>
+<body>
+<div id="scena"></div>
+<div id="panel">
+  <h1><span id="zagolovok">Lived-in Houses</span> <button id="svernut" title="hide / скрыть">–</button></h1>
+  <div id="telo">
+  <select id="dom"></select>
+  <div class="ryad" id="rakursy"></div>
+  <div class="ryad" id="gruppy"></div>
+  <div class="ryad">
+    <label><span id="srez-t">Cut height</span>: <span id="srez-zn">—</span></label>
+    <input id="srez" type="range" min="0" max="100" value="100">
+  </div>
+  <div class="podpis" id="proverki"></div>
+  <div class="podpis" id="info"></div>
+  <div class="podpis"><a href="https://github.com/bandurchencko/lived-in-houses">GitHub</a> · a rule-based generator of
+    enterable village houses</div>
+  </div>
+</div>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const RU = (navigator.language || '').startsWith('ru');
+const T = RU ? { orbit: 'Мышь: вращать, колесо — ближе.', tri: 'Треугольников', checks: 'Проверки пройдены',
+                 whole: 'весь дом', cut: 'Срез по высоте', title: 'Обжитые дома' }
+             : { orbit: 'Mouse: orbit, wheel: zoom.', tri: 'Triangles', checks: 'Checks passed',
+                 whole: 'whole house', cut: 'Cut height', title: 'Lived-in Houses' };
+let DOMA = [];
+const IMENA = RU ? { obolochka: 'Стены', peregorodki: 'Перегородки', poly: 'Полы', krysha: 'Крыша', mebel: 'Мебель',
+                     melochi: 'Мелочи', zelen: 'Зелень', zemlya: 'Земля' }
+                  : { obolochka: 'Shell', peregorodki: 'Partitions', poly: 'Floors', krysha: 'Roof', mebel: 'Furniture',
+                      melochi: 'Props', zelen: 'Greenery', zemlya: 'Ground' };
+const papka = new URLSearchParams(location.search).get('papka') || 'glb/';
+document.getElementById('zagolovok').textContent = T.title;
+document.getElementById('svernut').onclick = () => document.getElementById('panel').classList.toggle('svernut');
+
+const el = document.getElementById('scena');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.localClippingEnabled = true;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+el.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xbfd3e3);
+const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 500);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xdfeeff, 0x6b5a40, 1.1));
+const sun = new THREE.DirectionalLight(0xfff1dc, 2.4);
+sun.position.set(-16, 24, -20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20, near: 1, far: 80 });
+scene.add(sun);
+
+const srez = new THREE.Plane(new THREE.Vector3(0, -1, 0), 100);
+let tekushchij = null, vysota = 10;
+const loader = new GLTFLoader();
+const sel = document.getElementById('dom');
+sel.onchange = () => zagruzit(sel.value);
+fetch(papka + 'manifest.json').then(r => r.json()).then(m => {
+  DOMA = m.houses;
+  for (const d of DOMA) { const o = document.createElement('option'); o.value = d.file; o.textContent = RU ? d.title_ru : d.title; sel.appendChild(o); }
+  zagruzit(DOMA[0].file);
+});
+
+function zagruzit(f, gotovo) {
+  loader.load(papka + f, g => {
+    if (tekushchij) scene.remove(tekushchij);
+    tekushchij = g.scene;
+    tekushchij.traverse(o => {
+      if (o.isMesh) {
+        o.castShadow = true; o.receiveShadow = true;
+        o.material.clippingPlanes = [srez];
+        o.material.clipShadows = true;
+        o.material.side = o.material.transparent ? THREE.DoubleSide : THREE.FrontSide;
+      }
+    });
+    scene.add(tekushchij);
+    const box = new THREE.Box3();                    // рамка дома без плиты земли
+    tekushchij.traverse(o => { if (o.isMesh && !(o.name || '').startsWith('zemlya')) box.expandByObject(o); });
+    const c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3());
+    vysota = box.max.y;
+    centr.copy(c); centr.y = box.min.y + s.y * 0.35; razmer.copy(s);
+    rakurs(35, 26);
+    sun.target.position.copy(c); scene.add(sun.target);
+    sun.position.set(c.x - 16, c.y + 24, c.z - 20);
+    postroitGruppy();
+    obnovitSrez();
+    document.getElementById('info').textContent = T.tri + ': ' + schet() + '. ' + T.orbit;
+    const d = DOMA.find(x => x.file === f);
+    if (d) {
+      const ok = d.checks.filter(x => x.ok).length;
+      const el = document.getElementById('proverki');
+      el.textContent = T.checks + ': ' + ok + ' / ' + d.checks.length;
+      el.title = d.checks.map(x => (x.ok ? '✓ ' : '✗ ') + x.what).join(String.fromCharCode(10));
+    }
+    if (gotovo) gotovo();
+  }, undefined, e => { document.getElementById('info').textContent = (RU ? 'Не загрузился ' : 'Failed to load ') + f + ': ' + e; });
+}
+// ракурсы: лицо дома (улица) — со стороны v = 0, в glTF это z меньше середины
+let centr = new THREE.Vector3(), razmer = new THREE.Vector3();
+const RAKURSY = (RU ? ['Спереди', 'Справа', 'Сзади', 'Слева', 'Сверху'] : ['Front', 'Right', 'Back', 'Left', 'Top'])
+  .map((t, i) => [t, [0, 90, 180, 270, 0][i], i === 4 ? 80 : 28]);
+function rakurs(az, el) {
+  const d = Math.max(razmer.x, razmer.z, razmer.y) * 1.55;
+  const a = THREE.MathUtils.degToRad(az), e = THREE.MathUtils.degToRad(el);
+  camera.position.set(centr.x - Math.sin(a) * Math.cos(e) * d, centr.y + Math.sin(e) * d, centr.z - Math.cos(a) * Math.cos(e) * d);
+  controls.target.copy(centr); controls.update();
+}
+{
+  const box = document.getElementById('rakursy');
+  for (const [t, az, el] of RAKURSY) { const b = document.createElement('button'); b.textContent = t; b.onclick = () => rakurs(az, el); box.appendChild(b); }
+}
+// для съёмки ролика и проверок: загрузить дом и дождаться, показать или спрятать группу, срез
+window.prosmotr = { rakurs, scene, camera, controls,
+  zagruzit: f => new Promise(ok => { const s = document.getElementById('dom'); s.value = f; zagruzit(f, ok); }),
+  gruppa: (imya, vidno) => { if (tekushchij) tekushchij.traverse(o => { if (o.name === imya) o.visible = vidno; }); },
+  srez: dolya => { polzunok.value = Math.round(dolya * 100); obnovitSrez(); } };
+function schet() { let n = 0; tekushchij.traverse(o => { if (o.isMesh) n += o.geometry.index ? o.geometry.index.count / 3 : o.geometry.attributes.position.count / 3; }); return n.toLocaleString(); }
+function postroitGruppy() {
+  const box = document.getElementById('gruppy'); box.innerHTML = '';
+  const uzly = [];                                   // узлы групп — где бы ни лежали (у GLB trimesh есть корень «world»)
+  tekushchij.traverse(o => { if (IMENA[o.name] && !uzly.includes(o)) uzly.push(o); });
+  for (const uzel of uzly) {
+    const l = document.createElement('label'), c = document.createElement('input');
+    c.type = 'checkbox'; c.checked = true; c.onchange = () => { uzel.visible = c.checked; };
+    l.appendChild(c); l.append(' ' + (IMENA[uzel.name] || uzel.name)); box.appendChild(l);
+  }
+}
+const polzunok = document.getElementById('srez');
+function obnovitSrez() {
+  const h = vysota * polzunok.value / 100 + 0.01;
+  srez.constant = h;
+  document.getElementById('srez-zn').textContent = polzunok.value >= 100 ? T.whole : h.toFixed(1) + ' m';
+}
+polzunok.oninput = obnovitSrez;
+function sdvig() {
+  const pn = document.getElementById('panel');
+  const dx = (innerWidth > 760 && !pn.classList.contains('svernut')) ? pn.offsetWidth / 2 : 0;
+  camera.aspect = innerWidth / innerHeight;
+  if (dx) camera.setViewOffset(innerWidth, innerHeight, -dx, 0, innerWidth, innerHeight); else camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); sdvig(); });
+new ResizeObserver(sdvig).observe(document.getElementById('panel'));
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+document.getElementById('srez-t').textContent = T.cut;
+</script>
+</body>
+</html>
