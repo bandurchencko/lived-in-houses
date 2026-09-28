@@ -13,6 +13,46 @@ Export to glTF in seconds, look inside in the browser, or build straight into Un
 | **Thatched garden house, seed 1818** | **Tavern, seed 7 — another composition** |
 | ![Garden house](docs/obrazy/garden-house-1818.png) | ![Tavern seed 7](docs/obrazy/tavern-7-annex.png) |
 
+## Why we built it
+
+We are making a fairy-tale world where people, NPCs and AI characters **live inside** the houses. A house there is not a
+backdrop: you open the door, walk into the hall, sit at the table by the hearth, climb the stairs to the bedroom. So
+every house needs a real inside — rooms that make sense, doors a character fits through, stairs you can actually climb.
+
+We tried everything we could find before writing our own:
+
+- **AI image-to-3D** (Tripo, TRELLIS.2, Hunyuan3D). A beautiful house in a minute — but it is a statue: solid inside,
+  no rooms, the door is painted on. You cannot walk in.
+- **The engine's procedural city** (Unreal PCG, City Sample). Streets and facades in seconds — but boxes, no interiors,
+  and nothing like a village where you can feel how people live.
+- **Ready-made asset packs.** Great quality, but ten to thirty fixed houses: the whole world starts to look copy-pasted,
+  interiors are often empty, and the style is someone else's.
+- **Building by hand** from our own modules. Beautiful and exactly our style — but days per house. We once spent two days
+  on three houses.
+
+So we wrote a program that **knows how a house is arranged**: which rooms a tavern or a family home needs, where the
+hearth and the table go, how the stairs climb, where the windows look — and that **checks itself** (a character reaches
+every room, the stairs are walkable, nothing blocks a window). The look is set by numbers taken from concept art —
+plinth height, window sizes, roof pitch, materials — and every seed gives a new house in the same style. One house takes
+about a second to glTF and 8–30 seconds into Unreal.
+
+### When it helps
+
+- **An RPG, a life sim or a town builder** where players and NPCs go inside: taverns, homes, workshops, forges.
+- **Fast level blockouts with real interiors** — test movement, cameras and quests in houses that already pass
+  walkability checks.
+- **AI agents and NPC experiments** that need rooms to live in and navigate.
+- **Variety for a small team** — dozens of distinct houses in one style without modelling each by hand.
+- **Learning procedural architecture** — the rules are plain code you can read and change.
+
+It is not the best tool for photoreal hero buildings (an artist will do better), modern cities (see City Sample) or single
+props (AI generators and asset packs are faster there).
+
+### Why take it
+
+Free (MIT). Interiors and gameplay checks out of the box. glTF works in Unreal, Unity, Godot and Blender. Your own style
+is a set of numbers, not a new art pipeline. Two families to start — and the way to add more is right in the code.
+
 ## What it does
 
 Give it a family, a seed and a style — it builds a whole house you can walk into:
