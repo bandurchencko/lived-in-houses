@@ -527,6 +527,8 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
     # ---------------- против ровности: цоколь, камень, выпуски балок, кронштейны, каркас верха ----------------
     _cokol(D, u0, u1, v0, v1, vse)
     _kamen_zhivoj(D, r, u0, u1, v0, v1, KR, vse)
+    _glyby_u_uglov(D, random.Random(p['zerno_melochej'] + 101), u0, u1, v0, v1,     # своё зерно: остальное не сдвигается
+                   zanyato=[(u0 - 2.0, u1 + 3.0, v0 - 3.5, v0 + 0.2), (u1, u1 + 4.5, v0 - 3.5, v1 + 1.0)])
     bez_pered = [(u0 - 1.0, u1 + 1.0)] if kz == 'galereya' else ([(tf_u0 - 0.2, u1 + 1.0)] if kz == 'ugol' else [])
     _karkas_verha(D, r, u0, u1, v0, v1, F1, F2, EV, proemy_verh, bez_pered, kz == 'galereya')
 
@@ -1051,7 +1053,7 @@ def _naves_kuzni(D, p, nk_u0, nk_u1, v0, P, NV0):
     D.brus('obolochka', BRUS, (uk, vf, NWK - 0.12), (uk, v0, NWK - 0.12), 0.2, 0.22, (1, 0, 0))
 
 
-def _lestnica_naruzh(D, LU0, LU1, v_start, zn, W, ugol=34.0, plosh=1.25):
+def _lestnica_naruzh(D, LU0, LU1, v_start, zn, W, ugol=34.0, plosh=1.25, rr=None):
     """Наружная каменная лестница вдоль бока (u от LU0 до LU1): от земли у v_start поднимается в сторону zn (±v) до
     высоты W; площадка посередине, ниша под вторым маршем (не монолит), стенка-парапет с выступами, столбики с шапкой.
     → v верхней ступени."""
@@ -1073,12 +1075,22 @@ def _lestnica_naruzh(D, LU0, LU1, v_start, zn, W, ugol=34.0, plosh=1.25):
         kor_v(MOSH if k % 3 else KAM, x2 + d2 * k / n2, x2 + d2, h1 + (W - h1) * k / n2 - 0.35, h1 + (W - h1) * (k + 1) / n2)
     kor_v(KAM, x2, x2 + 0.45, 0.0, h1, 0.0)                                           # щёки ниши под вторым маршем
     kor_v(KAM, x2 + d2 - 0.45, x2 + d2, 0.0, W - 0.35, 0.0)
+    rr = rr or random.Random(int(W * 1000) + int(LU1 * 100))
     for (a, b, w0, w1) in ((0.0, d1, 0.0, h1), (x2, x2 + d2, h1, W)):
         n = 6
         for k in range(n):
             y0 = a + (b - a) * k / n
             y1 = a + (b - a) * (k + 1) / n
-            kor_v(KAM, y0, y1 + 0.01, 0.0 if w0 == 0.0 else w0 - 0.4, w0 + (w1 - w0) * (k + 1) / n + 0.8, 0.012, LU1, LU1 + 0.3)
+            verh = w0 + (w1 - w0) * (k + 1) / n + 0.8 + rr.uniform(-0.035, 0.035)     # парапет — неровный верх
+            nar = LU1 + 0.3 + rr.uniform(-0.02, 0.05)                              # и неровное лицо
+            kor_v(KAM, y0, y1 + 0.01, 0.0 if w0 == 0.0 else w0 - 0.4, verh, 0.012, LU1, nar)
+            # накрывной камень на каждом блоке, разной толщины и выноса (через один — выходили зубцы крепости)
+            kor_v(KAM, y0 - 0.02, y1 + 0.03, verh, verh + rr.uniform(0.06, 0.1), 0.015, LU1 - rr.uniform(0.02, 0.05),
+                  nar + rr.uniform(0.03, 0.06))
+    for _ in range(rr.choice((2, 3))):                                              # глыбы у подножия
+        y = rr.uniform(-0.2, 0.5)
+        D.sfera('melochi', KAM, LU1 + rr.uniform(0.45, 0.8), v_start + zn * y, rr.uniform(-0.05, 0.03), rr.uniform(0.22, 0.34),
+                (rr.uniform(1.1, 1.4), rr.uniform(0.9, 1.2), rr.uniform(0.45, 0.62)), 3)
     for (y, ww) in ((0.05, 0.0), (d1 + 0.1, h1)):
         kor_v(KAM, y, y + 0.4, ww, ww + 1.05, 0.02, LU1 - 0.02, LU1 + 0.36)
         kor_v(KAM, y - 0.05, y + 0.45, ww + 1.05, ww + 1.17, 0.012, LU1 - 0.07, LU1 + 0.41)
@@ -1289,9 +1301,9 @@ def _kamen_zhivoj(D, r, u0, u1, v0, v1, KR, proemy):
         w = 0.0
         k = 0
         while w < KR - 0.1:
-            h = r.uniform(0.24, 0.32)
-            dl_a, dl_b = (0.55, 0.3) if k % 2 == 0 else (0.3, 0.55)
-            vy = r.uniform(0.012, 0.03)
+            h = r.uniform(0.28, 0.38)                    # угловые камни крупнее и выступают заметно (Астра 28.09, вечер)
+            dl_a, dl_b = (0.7, 0.36) if k % 2 == 0 else (0.36, 0.7)
+            vy = r.uniform(0.04, 0.07)
             D.kor('obolochka', KAM, min(cu, cu + zu * dl_a) - (vy if zu < 0 else 0), max(cu, cu + zu * dl_a) + (vy if zu < 0 else 0),
                   min(cv, cv - zv * vy), max(cv, cv - zv * vy) + (0.02 if zv > 0 else 0), w, min(w + h, KR + 0.04), 0.012)
             D.kor('obolochka', KAM, min(cu, cu - zu * vy), max(cu, cu - zu * vy) + (0.02 if zu > 0 else 0),
@@ -1304,9 +1316,9 @@ def _kamen_zhivoj(D, r, u0, u1, v0, v1, KR, proemy):
         while a < a_kon:
             dl = r.uniform(0.25, 0.6)
             h = r.uniform(0.18, 0.3)
-            dw = r.uniform(-0.04, 0.05)
+            dw = r.uniform(-0.07, 0.08)                  # неровный верх каменного низа
             if not v_proeme(st, a + dl / 2, KR - 0.1):
-                _kamen_na_stene(D, st, a, min(a + dl, a_kon), KR - h + dw, KR + dw, r.uniform(0.008, 0.02), u0, u1, v0, v1)
+                _kamen_na_stene(D, st, a, min(a + dl, a_kon), KR - h + dw, KR + dw, r.uniform(0.02, 0.045), u0, u1, v0, v1)
             a += dl + 0.01
         for _ in range(int((a_kon - a_nach) * 1.2)):
             a = r.uniform(a_nach, a_kon)
@@ -1314,7 +1326,21 @@ def _kamen_zhivoj(D, r, u0, u1, v0, v1, KR, proemy):
             if v_proeme(st, a, w):
                 continue
             dl, h = r.uniform(0.2, 0.45), r.uniform(0.12, 0.24)
-            _kamen_na_stene(D, st, a, a + dl, w, w + h, r.uniform(0.01, 0.03), u0, u1, v0, v1)
+            _kamen_na_stene(D, st, a, a + dl, w, w + h, r.uniform(0.02, 0.05), u0, u1, v0, v1)
+
+
+def _glyby_u_uglov(D, rr, u0, u1, v0, v1, zanyato=()):
+    """Крупные камни, наполовину в земле, у углов дома (Астра 28.09, вечер: «отдельные крупные камни» — толщина
+    архитектуры). zanyato — (u0, u1, v0, v1) мест, где камней не класть (крыльцо, лестница, навес)."""
+    for (cu, cv, zu, zv) in ((u0, v0, -1, -1), (u1, v0, 1, -1), (u0, v1, -1, 1), (u1, v1, 1, 1)):
+        for _ in range(rr.choice((1, 2))):
+            ru = rr.uniform(0.22, 0.38)
+            x = cu + zu * rr.uniform(0.1, 0.45)
+            y = cv + zv * rr.uniform(0.1, 0.45)
+            if any(b0 - 0.4 <= x <= b1 + 0.4 and c0 - 0.4 <= y <= c1 + 0.4 for (b0, b1, c0, c1) in zanyato):
+                continue
+            D.sfera('melochi', KAM, x, y, rr.uniform(-0.06, 0.03), ru,
+                    (rr.uniform(1.15, 1.5), rr.uniform(0.9, 1.2), rr.uniform(0.45, 0.65)), 3)
 
 
 def _kamen_na_stene(D, st, a0, a1, w0, w1, vy, u0, u1, v0, v1):

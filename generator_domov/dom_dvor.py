@@ -25,7 +25,8 @@ import random
 
 from .detali import Detali, zerkalo_detalej
 from .stil_mangala import (BRUS, CHER, CVET, DOSKI, KAM, KRAS, MOSH, SHT, STEK, STIL, TKAN, TRAV, UGLI, ZHEL)
-from .traktir import (Rama, _dveri, _krovat, _kryuchki, _peresek2, _podokonnik, _stol, _sunduk, _svobodno, sn)
+from .traktir import (Rama, _dveri, _kamen_zhivoj, _krovat, _kryuchki, _peresek2, _podokonnik, _stol, _sunduk, _svobodno,
+                      sn)
 
 SU_D, SV_D = 16.0, 14.0
 T, TV = 0.45, 0.16
@@ -173,6 +174,9 @@ def sobrat(zerno, chast=None, prosvet=None, zemlya=None, sad_k=None, stil='kolyb
         vy = vyrezy(st)
         D.stena('obolochka', KAM, [a0, a1, b0, b1, 0.0, KR], vy)
         D.stena('obolochka', SHT, [a0, a1, b0, b1, KR, EV], vy)
+    # живой камень цоколя: крупные угловые камни, неровный верх, выступы (Астра 28.09, вечер: «объёмный камень») —
+    # своим зерном, чтобы остальное в доме не сдвигалось
+    _kamen_zhivoj(D, random.Random(p['zerno_melochej'] + 202), u0, u1, v0, v1, KR, pr)
     prof = _profil_pryamoj(p, v0, v1, EV) if mg else _profil_krovli(p, v0, v1, EV)
     WR = prof['WR']
     vc = (v0 + v1) / 2.0

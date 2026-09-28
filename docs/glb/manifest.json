@@ -5,8 +5,8 @@
    "title": "Tavern with forge · seed 13 · gallery",
    "title_ru": "Трактир с кузницей · зерно 13 · галерея",
    "style": "mangala",
-   "details": 660,
-   "triangles": 19776,
+   "details": 659,
+   "triangles": 19900,
    "checks_passed": true,
    "checks": [
     {
@@ -80,8 +80,8 @@
    "title": "Tavern with forge · seed 7 · annex",
    "title_ru": "Трактир с кузницей · зерно 7 · пристройка",
    "style": "mangala",
-   "details": 594,
-   "triangles": 18304,
+   "details": 591,
+   "triangles": 18336,
    "checks_passed": true,
    "checks": [
     {
@@ -151,8 +151,8 @@
    "title": "Tavern with forge · seed 4 · corner",
    "title_ru": "Трактир с кузницей · зерно 4 · угол",
    "style": "mangala",
-   "details": 628,
-   "triangles": 16540,
+   "details": 631,
+   "triangles": 16780,
    "checks_passed": true,
    "checks": [
     {
@@ -226,8 +226,8 @@
    "title": "Thatched garden house · seed 1818",
    "title_ru": "Садовый дом под камышом · зерно 1818",
    "style": "kolybel",
-   "details": 496,
-   "triangles": 17372,
+   "details": 597,
+   "triangles": 18584,
    "checks_passed": true,
    "checks": [
     {
@@ -269,8 +269,8 @@
    "title": "Thatched house with porch · seed 1717",
    "title_ru": "Дом с крыльцом под камышом · зерно 1717",
    "style": "kolybel",
-   "details": 449,
-   "triangles": 15632,
+   "details": 551,
+   "triangles": 16856,
    "checks_passed": true,
    "checks": [
     {
@@ -312,8 +312,8 @@
    "title": "Thatched house with workshop · seed 2020",
    "title_ru": "Дом с мастерской под камышом · зерно 2020",
    "style": "kolybel",
-   "details": 444,
-   "triangles": 14832,
+   "details": 549,
+   "triangles": 16092,
    "checks_passed": true,
    "checks": [
     {
@@ -355,8 +355,8 @@
    "title": "Red-stone house with garden · seed 7",
    "title_ru": "Дом красного камня с садом · зерно 7",
    "style": "mangala",
-   "details": 361,
-   "triangles": 13940,
+   "details": 470,
+   "triangles": 15248,
    "checks_passed": true,
    "checks": [
     {
@@ -406,8 +406,8 @@
     "stavni": "#5e4a37"
    },
    "picture": "obraz/dom-kuznya/kartinka.jpg",
-   "details": 613,
-   "triangles": 14608,
+   "details": 618,
+   "triangles": 14940,
    "checks_passed": true,
    "checks": [
     {
@@ -489,8 +489,8 @@
     "stavni": "#7f8c72"
    },
    "picture": "obraz/ulica-k-vode/kartinka.jpg",
-   "details": 453,
-   "triangles": 15668,
+   "details": 557,
+   "triangles": 16916,
    "checks_passed": true,
    "checks": [
     {
