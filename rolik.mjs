@@ -21,6 +21,10 @@ const SHOTS = [
   ['workshop-house-2020.glb', 45, t => ({ az: lerp(42, 26, t), el: 24, cut: 1, roof: true })],
   ['porch-house-1717.glb', 45, t => ({ az: lerp(-42, -26, t), el: 24, cut: 1, roof: true })],
 ];
+// «рисунок → дом»: облёт дома, построенного по рисунку кузни (отдельной папкой: <out>-obraz)
+const SHOTS_OBRAZ = [
+  ['obraz/dom-kuznya/dom.glb', 150, t => ({ az: lerp(-62, -24, ease(t)), el: lerp(12, 20, t), cut: 1, roof: true })],
+];
 
 fs.mkdirSync(OUT, { recursive: true });
 const b = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
@@ -30,7 +34,8 @@ await p.waitForFunction(() => window.prosmotr && document.querySelectorAll('#dom
 await p.evaluate(() => { document.getElementById('panel').style.display = 'none'; });
 let n = 0, tekushchij = null;
 const t0 = Date.now();
-for (const [dom, kadrov, f] of SHOTS) {
+const VSE = process.env.TOLKO_OBRAZ ? SHOTS_OBRAZ : SHOTS;
+for (const [dom, kadrov, f] of VSE) {
   if (dom !== tekushchij) {
     await p.evaluate(d => window.prosmotr.zagruzit(d), dom);
     await p.waitForTimeout(400);

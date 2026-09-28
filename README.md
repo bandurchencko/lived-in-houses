@@ -5,7 +5,9 @@ Export to glTF in seconds, look inside in the browser, or build straight into Un
 
 > *"A house becomes interesting when its layout lets you imagine the life inside."* — Astra, our AI art-direction assistant
 
-[Русская версия](README.ru.md) · **[Live demo — open a house in your browser](https://bandurchencko.github.io/lived-in-houses/)** · **[Trailer, 43 s](https://bandurchencko.github.io/lived-in-houses/lived-in-houses.mp4)**
+[Русская версия](README.ru.md) · **[Live demo — open a house in your browser](https://bandurchencko.github.io/lived-in-houses/)** · **[Trailer, 50 s](https://bandurchencko.github.io/lived-in-houses/lived-in-houses.mp4)**
+
+**Version 0.3** (28 September 2026) — a house from your picture, textured browser demo, gable roofs, volumetric stone, yard trades. [What changed](CHANGELOG.md).
 
 | Tavern with forge, seed 13 | Cut at 3.3 m: the ground floor inside |
 |---|---|
@@ -58,11 +60,13 @@ is a set of numbers, not a new art pipeline. Two families to start — and the w
 Give it a family, a seed and a style — it builds a whole house you can walk into:
 
 1. **Passport** — the seed picks numbers inside the style's ranges (plinth height, window sizes, roof pitch, eaves…) and
-   a composition (the tavern has four: *gallery*, *annex*, *corner*, *canopy*).
+   a composition (the tavern has four: *gallery*, *annex*, *corner*, *canopy*) and a roof (*hip* or *gable* with
+   half-timbered gable ends).
 2. **Floor plan** — rooms by programme (hall with a hearth and a common table, kitchen, bedrooms, storeroom, workshop or
    forge), doors, windows, stairs, porch, gallery, yard, shed, garden.
 3. **Details without an engine** — walls with openings, floors, ceilings, roof planes, timber frame, windows with
-   shutters, eave tiles or thatch, furniture and small props — grouped as *shell / partitions / floors / roof / furniture
+   shutters, eave tiles or thatch, live stone (larger protruding corner stones, an uneven top course, stair
+   parapets with cap stones, boulders at the foot), furniture and small props — grouped as *shell / partitions / floors / roof / furniture
    / props* (separate meshes, so lighting inside stays clean).
 4. **Checks** — a character capsule reaches every room through every door, stairs are walkable (≤ 38°, riser ≤ 0.19 m,
    tread ≥ 0.27 m), doors ≥ 0.95 m, living rooms have windows, the hearth and the table are seen from the entrance,
