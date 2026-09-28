@@ -9,6 +9,19 @@ Export to glTF in seconds, look inside in the browser, or build straight into Un
 
 **Version 0.3** (28 September 2026) — a house from your picture, textured browser demo, gable roofs, volumetric stone, yard trades. [What changed](CHANGELOG.md).
 
+## In one minute
+
+- **Who it is for:** game developers and modders who need *villages you can walk into* — RPGs, life sims, town builders,
+  level blockouts, AI/NPC experiments — and do not have months for hand-modelling every house.
+- **The problem it solves:** AI image-to-3D gives beautiful statues with nothing inside; procedural cities give boxes;
+  asset packs give the same twenty houses. This builds a whole house with rooms, doors, stairs, furniture and a yard in
+  about a second — and checks that a character can actually walk through it.
+- **How to use it:** open the [live demo](https://bandurchencko.github.io/lived-in-houses/) (no install) → or
+  `pip install -r requirements.txt` and export a house to glTF for Unreal, Unity, Godot or Blender → or show it your own
+  picture and get the nearest house it knows (`python -m generator_domov.obraz my-house.jpg`).
+- **What's next:** we develop it together with our game — new families and styles as our villages need them — and we
+  will keep publishing the tools we make along the way.
+
 | Tavern with forge, seed 13 | Cut at 3.3 m: the ground floor inside |
 |---|---|
 | ![Tavern with forge](docs/obrazy/cover-tavern-13.png) | ![Tavern interior](docs/obrazy/cut-tavern-13.png) |
