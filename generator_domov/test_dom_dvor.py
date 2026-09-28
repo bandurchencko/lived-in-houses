@@ -74,3 +74,16 @@ def test_krovlya_nad_stenoj(chast):
         assert all(0 < b - a <= 6.0 for a, b in zip(ug, ug[1:]))
         plity = [d for d in D.spisok if d['t'] == 'plita' and d['g'] == 'krysha' and 'uv_v' in d]
         assert len(plity) == 8, 'по четыре грани на скат, со сплошной развёрткой'
+
+
+@pytest.mark.parametrize('chast, osoboe, chast_imya', [('masterskaya', {'konyushnya': True}, 'конюшня'),
+                                                       ('sad', {'ulya': 3}, 'ульи'),
+                                                       ('krylco', {'kuryatnik': True}, 'птичник')])
+def test_osobye_detali_dvora(chast, osoboe, chast_imya):
+    """Особые детали по месту (улица Колыбели, 28.09): конюшня на навесе мастерской, ульи в саду, птичник в заднем
+    дворе — встают, дом проходит проверки; без них дом прежний."""
+    pas, plan, D = dom_dvor.sobrat(1414, chast, [], None, 'jug' if chast != 'krylco' else None, 'kolybel', None, osoboe)
+    assert any(ch['imya'] == chast_imya for ch in plan['chasti'])
+    assert all(x['ok'] for x in proverit(pas, plan, D))
+    pas0, plan0, D0 = dom_dvor.sobrat(1414, chast, [], None, 'jug' if chast != 'krylco' else None, 'kolybel')
+    assert not any(ch['imya'] == chast_imya for ch in plan0['chasti'])

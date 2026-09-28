@@ -71,7 +71,7 @@ Give it a family, a seed and a style — it builds a whole house you can walk in
    engine-side builder we use in our game; see *Unreal* below).
 
 Two families today: **tavern with forge** (four compositions) and **house with a yard** (porch, garden or workshop;
-shed, beds, wattle fence), in two styles — **red stone** (lime plaster, dark timber, terracotta tiles) and **thatched
+shed, beds, wattle fence; by place — a stable under the canopy, beehives in the garden, a poultry coop), in two styles — **red stone** (lime plaster, dark timber, terracotta tiles) and **thatched
 cottage** (cream clay, dark half-timbering, thick thatch). All seven examples pass all of their checks.
 
 ## From a picture to a house: who does what

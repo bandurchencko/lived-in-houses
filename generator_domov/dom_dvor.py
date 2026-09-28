@@ -97,10 +97,13 @@ def parametry(zerno, chast=None, prosvet=None, sad_k=None, stil='kolybel', obraz
     return p
 
 
-def sobrat(zerno, chast=None, prosvet=None, zemlya=None, sad_k=None, stil='kolybel', obraz=None):
+def sobrat(zerno, chast=None, prosvet=None, zemlya=None, sad_k=None, stil='kolybel', obraz=None, osoboe=None):
     """→ (паспорт, план, детали). zemlya(u, v) — высота земли относительно основания дома (для вещей двора); без неё — 0.
     stil — облик земли ('kolybel' | 'mangala'); obraz — числа облика с картинки (obraz.py), в пределах PREDELY_OBRAZA."""
     p = parametry(zerno, chast, prosvet, sad_k, stil, obraz)
+    # особые детали двора по месту (улица Колыбели, Астра 28.09): {'konyushnya': True} — навес мастерской под конюшню,
+    # {'ulya': N} — ульи в глубине сада, {'kuryatnik': True} — птичник в заднем дворе; своё зерно — остальное не сдвигается
+    p['osoboe'] = dict(osoboe or {})
     mg = stil == 'mangala'
     r = random.Random(p['zerno_melochej'])
     D = Detali()
@@ -279,8 +282,9 @@ def sobrat(zerno, chast=None, prosvet=None, zemlya=None, sad_k=None, stil='kolyb
         _sad(D, r, p, u0, u1, v0, v1, zh, storony['sad'], plan, P, EV)
     else:
         _masterskaya(D, r, p, u0, u1, v0, v1, P, zh, storony['sad'], EV, plan)
-        m_ = (u1, u1 + 2.6) if storony['sad'] == 'jug' else (u0 - 2.6, u0)
-        plan['chasti'].append({'imya': 'мастерская', 'etazh': 0, 'b': [m_[0], m_[1], v0 + 0.3, v1 - 0.3]})
+        if not p['osoboe'].get('konyushnya'):                     # у конюшни своя часть («конюшня»)
+            m_ = (u1, u1 + 2.6) if storony['sad'] == 'jug' else (u0 - 2.6, u0)
+            plan['chasti'].append({'imya': 'мастерская', 'etazh': 0, 'b': [m_[0], m_[1], v0 + 0.3, v1 - 0.3]})
     D.istochnik('fonar', dv_u1 + 0.3, v0 - 0.25, P + 2.0, 3.0, 300.0, (255, 196, 140), False)
     D.kor('melochi', ZHEL, dv_u1 + 0.2, dv_u1 + 0.4, v0 - 0.35, v0 - 0.15, P + 1.85, P + 2.15)
     D.kor('melochi', STEK, dv_u1 + 0.23, dv_u1 + 0.37, v0 - 0.32, v0 - 0.18, P + 1.88, P + 2.12)
@@ -306,7 +310,8 @@ def sobrat(zerno, chast=None, prosvet=None, zemlya=None, sad_k=None, stil='kolyb
     }
     plan['vidy'] = [{'imya': 'от входа в горницу', 'ot': [dvc, vi0 + 0.5], 'na': [ui0 + 0.6, vi1 - 1.0]}]
     pas = {'semejstvo': 'dom-dvor', 'zemlya': stil, 'zerno': zerno, 'sled': [SU_D, SV_D], 'etazhi': 1, 'parametry': p,
-           'chast': chast, 'chast_imya': IMENA_CHASTEJ[chast], 'krysha': 'cherepica' if mg else 'kamysh', 'nutro': 'polnoe'}
+           'chast': chast, 'chast_imya': 'конюшня под навесом' if p['osoboe'].get('konyushnya') else IMENA_CHASTEJ[chast],
+           'osoboe': p['osoboe'], 'krysha': 'cherepica' if mg else 'kamysh', 'nutro': 'polnoe'}
     if p['s'] < 0:
         zerkalo_detalej(D.spisok, D.svet, SU_D)
         for k, (ot, na) in plan['kamery'].items():
@@ -670,11 +675,26 @@ def _dvor(D, r, p, u0, u1, v0, v1, P, zh, storony, plan):
     ku, kv_ = sb[1] + 0.8, sb[2] - 0.9
     D.cil('melochi', BRUS, ku, kv_, zh(ku, kv_), 0.3, 0.55, 12)
     D.cil_os('melochi', ZHEL, (ku, kv_, zh(ku, kv_) + 0.55), (ku + 0.25, kv_ + 0.1, zh(ku, kv_) + 0.95), 0.02, 4)
+    ptichnik = None
+    if p.get('osoboe', {}).get('kuryatnik') and not otkryt:               # птичник — напротив сарая, на ножках, со сходнями
+        pb = (u1 - 1.7, u1 - 0.3, zv - 1.5, zv - 0.4) if su != 'jug' else (u0 + 0.3, u0 + 1.7, zv - 1.5, zv - 0.4)
+        if not _peresek2(pb, sb):
+            ptichnik = pb
+            hp = zh((pb[0] + pb[1]) / 2.0, (pb[2] + pb[3]) / 2.0)
+            for (x_, y_) in ((pb[0] + 0.1, pb[2] + 0.1), (pb[1] - 0.1, pb[2] + 0.1), (pb[0] + 0.1, pb[3] - 0.1), (pb[1] - 0.1, pb[3] - 0.1)):
+                D.cil('melochi', BRUS, x_, y_, hp - 0.03, 0.04, 0.5, 5)
+            D.kor('melochi', DOSKI, pb[0], pb[1], pb[2], pb[3], hp + 0.45, hp + 1.35, 0.01)
+            D.plita('melochi', CHER, [(pb[0] - 0.15, pb[2] - 0.2, hp + 1.55), (pb[1] + 0.15, pb[2] - 0.2, hp + 1.55),
+                                      (pb[1] + 0.15, pb[3] + 0.2, hp + 1.35), (pb[0] - 0.15, pb[3] + 0.2, hp + 1.35)], 0.08)
+            cx_ = (pb[0] + pb[1]) / 2.0
+            D.brus('melochi', DOSKI, (cx_, pb[2] - 0.05, hp + 0.6), (cx_, pb[2] - 0.75, zh(cx_, pb[2] - 0.75) + 0.02), 0.28, 0.03,
+                   (1, 0, 0), 0.004)
+            plan['chasti'].append({'imya': 'птичник', 'etazh': 0, 'b': list(pb)})
     # грядки на заднем дворе (при открытом просвете — только у сарая)
     for k in range(1 if otkryt else 3):
         gu0 = u0 + 0.3 + k * 1.5 if su != 'sev' else u1 - 1.5 - k * 1.5
         gv0 = v1 + 1.3
-        if _peresek2((gu0, gu0 + 1.1, gv0, gv0 + 2.4), sb):
+        if _peresek2((gu0, gu0 + 1.1, gv0, gv0 + 2.4), sb) or (ptichnik and _peresek2((gu0, gu0 + 1.1, gv0, gv0 + 2.4), ptichnik)):
             continue
         hg = zh(gu0 + 0.55, gv0 + 1.2)
         D.kor('melochi', DOSKI, gu0, gu0 + 1.1, gv0, gv0 + 2.4, hg - 0.1, hg + 0.18, 0.01)
@@ -747,6 +767,25 @@ def _sad(D, r, p, u0, u1, v0, v1, zh, storona, plan, P=0.7, EV=4.0):
         plan['derevya'].append([round(uu, 3), round(vv, 3), round(zh(uu, vv), 3), round(r.uniform(0.36, 0.42), 3),
                                 round(r.uniform(0, 360), 1)])
         D.cil('melochi', TRAV, uu, vv, zh(uu, vv) - 0.02, 0.6, 0.04, 12)                                   # приствольный круг
+    n_ulev = int(p.get('osoboe', {}).get('ulya') or 0)
+    if n_ulev:                                                           # ульи — в глубине сада, между стволами
+        import random
+        rr = random.Random(p['zerno_melochej'] + 404)
+        stvoly = [(d_[0], d_[1]) for d_ in plan['derevya']]
+        postavleno, popytki = 0, 0
+        while postavleno < n_ulev and popytki < 60:
+            popytki += 1
+            uu, vv = rr.uniform(a0 + 0.5, a1 - 0.5), rr.uniform(v1 - 1.0, b1 - 0.4)
+            if any(math.hypot(uu - x, vv - y) < 0.9 for x, y in stvoly):
+                continue
+            hz = zh(uu, vv)
+            for (du, dv) in ((-0.18, -0.18), (0.18, -0.18), (-0.18, 0.18), (0.18, 0.18)):
+                D.cil('melochi', BRUS, uu + du, vv + dv, hz - 0.03, 0.03, 0.38, 5)
+            D.kor('melochi', DOSKI, uu - 0.24, uu + 0.24, vv - 0.24, vv + 0.24, hz + 0.35, hz + 0.85, 0.01)
+            D.kor('melochi', DOSKI, uu - 0.31, uu + 0.31, vv - 0.31, vv + 0.31, hz + 0.85, hz + 0.91, 0.01)
+            stvoly.append((uu, vv))
+            postavleno += 1
+        plan['chasti'].append({'imya': 'ульи', 'etazh': 0, 'b': [a0, a1, v1 - 1.0, b1]})
     # цветник вдоль стены дома
     su = u1 + 0.1 if storona == 'jug' else u0 - 0.7
     for k in range(int((v1 - v0 - 0.4) / 1.3)):
@@ -822,6 +861,49 @@ def _sad(D, r, p, u0, u1, v0, v1, zh, storona, plan, P=0.7, EV=4.0):
     plan['chasti'].append({'imya': 'сад', 'etazh': 0, 'b': [min(a0, a1), max(a0, a1), b0, b1]})
 
 
+def _konyushnya(D, p, lico, zn, uo, b0, b1, h, v0, zh, plan):
+    """Конюшня под навесом мастерской (Астра 28.09, улица Колыбели №14: «сохранить смысл конюшни: навес для ухода за
+    упряжью, широкая калитка во двор»): коновязь у открытого края, поилка, седло на козлах, упряжь на крюках у стены,
+    тюки сена в глубине; широкие ворота — рама из двух столбов с перекладиной у переднего конца навеса."""
+    import random
+    rr = random.Random(p['zerno_melochej'] + 303)
+    seno = CHER if p['stil'] == 'kolybel' else TKAN
+    for k in range(5):                                                  # тюки сена в глубине, стопкой
+        a_ = uo - zn * (1.0 + (k % 2) * 0.9)
+        w_ = h + 0.12 + (k // 2) * 0.45
+        D.kor('melochi', seno, min(a_, a_ - zn * 0.85), max(a_, a_ - zn * 0.85), b1 - 1.3 - (k % 3) * 0.1, b1 - 0.3, w_,
+              w_ + 0.42, 0.04)
+    # коновязь: бревно на двух столбиках вдоль открытого края
+    ck = uo + zn * 0.35
+    for vv in (b0 + 0.8, b0 + 2.6):
+        D.cil('melochi', BRUS, ck, vv, zh(ck, vv) - 0.05, 0.07, 1.15, 8)
+    D.cil_os('melochi', BRUS, (ck, b0 + 0.65, h + 0.98), (ck, b0 + 2.75, h + 0.98), 0.06, 8)
+    # поилка — долблёная колода у коновязи
+    D.kor('melochi', DOSKI, ck + zn * 0.3 - 0.3, ck + zn * 0.3 + 0.3, b0 + 1.1, b0 + 2.3, zh(ck, b0 + 1.7), zh(ck, b0 + 1.7) + 0.5, 0.03)
+    D.kor('melochi', STEK, ck + zn * 0.3 - 0.22, ck + zn * 0.3 + 0.22, b0 + 1.18, b0 + 2.22, zh(ck, b0 + 1.7) + 0.44,
+          zh(ck, b0 + 1.7) + 0.46)
+    # седло на козлах — у стены под навесом
+    cs = lico + zn * 0.7
+    for s_ in (-1, 1):
+        D.cil_os('mebel', BRUS, (cs + s_ * 0.25, b1 - 2.4, h + 0.12), (cs, b1 - 2.4, h + 0.85), 0.035, 5)
+        D.cil_os('mebel', BRUS, (cs + s_ * 0.25, b1 - 1.7, h + 0.12), (cs, b1 - 1.7, h + 0.85), 0.035, 5)
+    D.brus('mebel', BRUS, (cs, b1 - 2.5, h + 0.86), (cs, b1 - 1.6, h + 0.86), 0.12, 0.1, (1, 0, 0), 0.01)
+    D.sfera('mebel', KRAS, cs, b1 - 2.05, h + 0.98, 0.3, (1.0, 1.5, 0.45), 3)
+    # упряжь на крюках у стены
+    for k in range(3):
+        vv = b0 + 0.6 + k * 0.55
+        D.cil_os('mebel', ZHEL, (lico, vv, h + 1.7), (lico + zn * 0.12, vv, h + 1.7), 0.015, 4)
+        D.cil_os('mebel', KRAS if k == 1 else DOSKI, (lico + zn * 0.1, vv, h + 1.68), (lico + zn * 0.1, vv + rr.uniform(-0.05, 0.05),
+                 h + 1.0 + rr.uniform(0.0, 0.2)), 0.03, 5)
+    # широкие ворота: рама из двух столбов и перекладины у переднего конца навеса — вход во двор
+    for vv in (b0 - 0.2, b0 - 0.2 + 0.001):
+        pass
+    for a_ in (lico + zn * 0.2, uo + zn * 0.2):
+        D.cil('obolochka', BRUS, a_, b0 - 0.25, zh(a_, b0 - 0.25) - 0.05, 0.09, 2.45, 8)
+    D.brus('obolochka', BRUS, (lico + zn * 0.1, b0 - 0.25, h + 2.35), (uo + zn * 0.3, b0 - 0.25, h + 2.35), 0.16, 0.18, (0, 1, 0), 0.01)
+    plan['chasti'].append({'imya': 'конюшня', 'etazh': 0, 'b': [min(lico, uo), max(lico, uo), b0, b1]})
+
+
 def _masterskaya(D, r, p, u0, u1, v0, v1, P, zh, storona, EV, plan):
     """Выразительная часть «мастерская»: навес у бока дома с подкосами; рабочее место — у открытого края, ближе к двору
     (Астра 28.09: «с подхода занятие хозяина почти не считывается: выдвинуть к открытому краю навеса верстак или козлы с
@@ -845,6 +927,9 @@ def _masterskaya(D, r, p, u0, u1, v0, v1, P, zh, storona, EV, plan):
             if b0 + 0.1 < vv + s_ * 0.6 < b1 - 0.1:
                 D.brus('obolochka', BRUS, (uo - zn * 0.15, vv, wn - 0.45), (uo - zn * 0.15, vv + s_ * 0.6, wn + 0.12), 0.1, 0.1, (1, 0, 0))
     D.brus('obolochka', BRUS, (uo - zn * 0.15, b0 - 0.1, wn + 0.2), (uo - zn * 0.15, b1 + 0.1, wn + 0.2), 0.18, 0.2, (1, 0, 0))
+    if p.get('osoboe', {}).get('konyushnya'):
+        _konyushnya(D, p, lico, zn, uo, b0, b1, h, v0, zh, plan)
+        return
     # верстак у стены — у переднего конца навеса; инструмент над ним
     vu0, vu1 = (lico + zn * 0.1, lico + zn * 0.8)
     D.kor('mebel', BRUS, min(vu0, vu1), max(vu0, vu1), b0 + 0.4, b0 + 2.2, h + 0.85, h + 0.95, 0.01)
