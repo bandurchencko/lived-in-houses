@@ -185,6 +185,15 @@ function zagruzit(f, gotovo) {
   loader.load(/^(blob:|https?:|\/|\.)/.test(f) || f.includes('/') ? f : papka + f, g => {
     if (tekushchij) scene.remove(tekushchij);
     tekushchij = g.scene;
+    // сетки без нормалей (экспорт их не пишет): затенение плоское и так, но смещение тени идёт по нормали — без неё
+    // тень не ложится вовсе
+    const sNormalyami = new Set();
+    tekushchij.traverse(o => {
+      if (o.isMesh && !o.geometry.attributes.normal && !sNormalyami.has(o.geometry)) {
+        sNormalyami.add(o.geometry);
+        o.geometry.computeVertexNormals();
+      }
+    });
     tekushchij.traverse(o => {
       if (o.isMesh) {
         o.castShadow = true; o.receiveShadow = true;

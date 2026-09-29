@@ -7,7 +7,7 @@ Export to glTF in seconds, look inside in the browser, or build straight into Un
 
 [Русская версия](README.ru.md) · **[Live demo — open a house in your browser](https://bandurchencko.github.io/lived-in-houses/)** · **[Trailer, 50 s](https://bandurchencko.github.io/lived-in-houses/lived-in-houses.mp4)**
 
-**Version 0.3.3** (28 September 2026) — a house from your picture, textured browser demo, gable roofs, volumetric stone, yard trades. [What changed](CHANGELOG.md).
+**Version 0.3.4** (29 September 2026) — doors no longer blocked by the sill beam, shadows in the viewer; before that: a house from your picture, textured browser demo, gable roofs, volumetric stone, yard trades. [What changed](CHANGELOG.md).
 
 ## In one minute
 
@@ -150,7 +150,7 @@ this one follows the picture's style and gives you a house you can live in.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest generator_domov -q                  # 364 tests, ~16 s
+python -m pytest generator_domov -q                  # 365 tests, ~16 s
 python primery.py                                    # rebuild the examples into docs/glb
 python -m generator_domov.eksport_glb traktir 13 --kompoz=galereya --vyhod=tavern.glb
 python -m generator_domov.eksport_glb dom-dvor 1818 --chast=sad --sad=jug --stil=kolybel --vyhod=garden-house.glb

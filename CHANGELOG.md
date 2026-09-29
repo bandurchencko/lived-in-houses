@@ -1,11 +1,14 @@
 # Changelog
 
-## 0.3.4 — not released yet (29 September 2026)
+## 0.3.4 — 29 September 2026
 
 - **Doors are no longer blocked by the sill beam** — the dark timber beam laid over the stone plinth (and the plinth beam
   of the red-stone look) ran across the entrance at knee height, so a character walking in through a door without a
   porch was stopped (found while walking a generated street in the browser). The beam now stops at the door posts; a
-  test keeps every sill beam out of door openings.
+  test keeps every sill beam out of door openings. Example houses rebuilt.
+- **Shadows in the browser viewer** — the exported meshes carry no normals (glTF clients compute flat ones), and without
+  them three.js drew no shadows at all: a house cast none on its ground plate and its gallery none on its walls. The
+  viewer now computes normals at load; houses cast and receive shadows.
 
 ## 0.3.3 — 28 September 2026 (night)
 

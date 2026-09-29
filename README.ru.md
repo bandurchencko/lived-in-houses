@@ -8,7 +8,7 @@ glTF за секунды, внутрь можно заглянуть в брау
 
 [English](README.md) · **[Живой показ — открыть дом в браузере](https://bandurchencko.github.io/lived-in-houses/)** · **[Ролик, 50 с](https://bandurchencko.github.io/lived-in-houses/lived-in-houses.mp4)**
 
-**Версия 0.3.3** (28 сентября 2026) — дом по своей картинке, показ с фактурами, двускатные крыши, объёмный камень, ремёсла дворов. [Что изменилось](CHANGELOG.md).
+**Версия 0.3.4** (29 сентября 2026) — брус больше не перегораживает двери, тени в просмотре; до того: дом по своей картинке, показ с фактурами, двускатные крыши, объёмный камень, ремёсла дворов. [Что изменилось](CHANGELOG.md).
 
 ## За минуту
 
@@ -144,7 +144,7 @@ python -m generator_domov.obraz moj-dom.jpg --glaza=api         # само: кл
 
 ```bash
 pip install -r requirements.txt
-python -m pytest generator_domov -q                  # 364 теста, ~16 с
+python -m pytest generator_domov -q                  # 365 тестов, ~16 с
 python primery.py                                    # примеры → docs/glb
 python -m generator_domov.eksport_glb traktir 13 --kompoz=galereya --vyhod=traktir.glb
 python -m http.server 8000 --directory docs          # и открыть http://localhost:8000

@@ -226,8 +226,8 @@
    "title": "Thatched garden house · seed 1818",
    "title_ru": "Садовый дом под камышом · зерно 1818",
    "style": "kolybel",
-   "details": 597,
-   "triangles": 18584,
+   "details": 598,
+   "triangles": 18596,
    "checks_passed": true,
    "checks": [
     {
@@ -269,8 +269,8 @@
    "title": "Thatched house with porch · seed 1717",
    "title_ru": "Дом с крыльцом под камышом · зерно 1717",
    "style": "kolybel",
-   "details": 551,
-   "triangles": 16856,
+   "details": 552,
+   "triangles": 16868,
    "checks_passed": true,
    "checks": [
     {
@@ -312,8 +312,8 @@
    "title": "Thatched house with workshop · seed 2020",
    "title_ru": "Дом с мастерской под камышом · зерно 2020",
    "style": "kolybel",
-   "details": 549,
-   "triangles": 16092,
+   "details": 550,
+   "triangles": 16104,
    "checks_passed": true,
    "checks": [
     {
@@ -355,8 +355,8 @@
    "title": "Red-stone house with garden · seed 7",
    "title_ru": "Дом красного камня с садом · зерно 7",
    "style": "mangala",
-   "details": 470,
-   "triangles": 15248,
+   "details": 471,
+   "triangles": 15260,
    "checks_passed": true,
    "checks": [
     {
@@ -489,8 +489,8 @@
     "stavni": "#7f8c72"
    },
    "picture": "obraz/ulica-k-vode/kartinka.jpg",
-   "details": 557,
-   "triangles": 16916,
+   "details": 558,
+   "triangles": 16928,
    "checks_passed": true,
    "checks": [
     {
