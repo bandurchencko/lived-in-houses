@@ -288,7 +288,7 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
             w_ok = sn(min(r.uniform(*STIL['okno_shir']), ost[1] - ost[0] - 0.05), 0.05)
             if w_ok >= 0.4:
                 x0 = ost[0] + 0.05 if kz == 'galereya' else ost[1] - 0.05 - w_ok
-                proem('ul', x0, x0 + w_ok, s0, s0 + min(1.2, EV - 0.2 - s0), 'okno', proemy_verh)
+                proem('ul', x0, x0 + w_ok, s0, s0 + min(1.2, EV - 0.2 - s0), 'okno_galereya', proemy_verh)
                 k['okna'] = [[x0, x0 + w_ok]]
             continue
         w_ok = sn(min(r.uniform(*STIL['okno_shir']), b_ - a_ - 0.3))
@@ -361,22 +361,36 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
         pt = {'ul': (c_, v0 + T + 0.9), 'zad': (c_, v1 - T - 0.9), 'sev': (u0 + T + 0.9, c_), 'jug': (u1 - T - 0.9, c_)}[st]
         D.istochnik('okno%d' % i_, pt[0], pt[1], wm, 3.0, 450.0, (210, 225, 255), False)
 
+    def _zapasy_peremychki(st_, a0_, a1_):
+        zap = 0.18
+        zap_l = zap
+        zap_r = zap
+        for (st_o, o0, o1, _, _, _) in vse:
+            if st_o != st_ or (abs(o0 - a0_) < 1e-4 and abs(o1 - a1_) < 1e-4):
+                continue
+            if o1 <= a0_ and a0_ - o1 < 2 * zap:
+                zap_l = min(zap_l, max(0.01, (a0_ - o1) / 2.0 - 0.005))
+            if o0 >= a1_ and o0 - a1_ < 2 * zap:
+                zap_r = min(zap_r, max(0.01, (o0 - a1_) / 2.0 - 0.005))
+        return zap_l, zap_r
+
     # окна (утоплены на 0,3 — Астра: «утопи окна»), двери, перемычки, подоконники
     for (st, a0, a1, w0, w1, vid) in vse:
+        zl, zr = _zapasy_peremychki(st, a0, a1)
         if vid.startswith('okno'):
             os_, lico, znak = ('u', v0, -1) if st == 'ul' else ('u', v1, 1) if st == 'zad' else \
                 ('v', u0, -1) if st == 'sev' else ('v', u1, 1)
-            D.okno(os_, a0, a1, w0, w1, lico, znak, perepl=1, stavni=(p['stavni'] and vid == 'okno'), steklo=False, glub=0.3)
+            D.okno(os_, a0, a1, w0, w1, lico, znak, perepl=1, stavni=(p['stavni'] and vid == 'okno'), steklo=False, glub=0.3, otliv=True)
             if vid == 'okno_reshetka':
                 for k in range(4):
                     x_ = a0 + (a1 - a0) * (k + 0.5) / 4.0
                     if os_ == 'v':
                         D.cil_os('obolochka', ZHEL, (lico + znak * 0.05, x_, w0), (lico + znak * 0.05, x_, w1), 0.012, 6)
-            _peremychka(D, st, a0, a1, w1, u0, u1, v0, v1, kam=w1 < KR + 0.3)
+            _peremychka(D, st, a0, a1, w1, u0, u1, v0, v1, kam=w1 < KR + 0.3, zap_l=zl, zap_r=zr)
             if w0 < F1:
                 _podokonnik(D, st, a0, a1, w0, u0, u1, v0, v1)
         else:
-            _peremychka(D, st, a0, a1, w1, u0, u1, v0, v1, kam=False, dver=True)
+            _peremychka(D, st, a0, a1, w1, u0, u1, v0, v1, kam=False, dver=True, zap_l=zl, zap_r=zr)
     _dveri(D, vse, u0, u1, v0, v1, F1)
 
     # ---------------- полы, перекрытие, потолок, лестница ----------------
@@ -689,29 +703,32 @@ def _kuz_krysha(p, nk_u0, nk_u1, v0):
     return h
 
 
-def _peremychka(D, st, a0, a1, w1, u0, u1, v0, v1, kam=False, dver=False):
+def _peremychka(D, st, a0, a1, w1, u0, u1, v0, v1, kam=False, dver=False, zap_l=0.18, zap_r=0.18):
     m = KAM if kam else BRUS
-    zap = 0.18
     h = 0.22 if not dver else 0.26
+    # Опускаем низ перемычки на 1.5 см в проём, чтобы он не совпадал с верхним откосом стены (z-fighting)
+    w_niz = round(w1 - 0.015, 4)
     if st == 'ul':
-        D.kor('obolochka', m, a0 - zap, a1 + zap, v0 - 0.05, v0 + 0.14, w1, w1 + h, 0.012)
+        D.kor('obolochka', m, a0 - zap_l, a1 + zap_r, v0 - 0.05, v0 + 0.14, w_niz, w1 + h, 0.012)
     elif st == 'zad':
-        D.kor('obolochka', m, a0 - zap, a1 + zap, v1 - 0.14, v1 + 0.05, w1, w1 + h, 0.012)
+        D.kor('obolochka', m, a0 - zap_l, a1 + zap_r, v1 - 0.14, v1 + 0.05, w_niz, w1 + h, 0.012)
     elif st == 'sev':
-        D.kor('obolochka', m, u0 - 0.05, u0 + 0.14, a0 - zap, a1 + zap, w1, w1 + h, 0.012)
+        D.kor('obolochka', m, u0 - 0.05, u0 + 0.14, a0 - zap_l, a1 + zap_r, w_niz, w1 + h, 0.012)
     else:
-        D.kor('obolochka', m, u1 - 0.14, u1 + 0.05, a0 - zap, a1 + zap, w1, w1 + h, 0.012)
+        D.kor('obolochka', m, u1 - 0.14, u1 + 0.05, a0 - zap_l, a1 + zap_r, w_niz, w1 + h, 0.012)
 
 
 def _podokonnik(D, st, a0, a1, w0, u0, u1, v0, v1):
+    # Каменная консоль-основание под деревянным подоконником (от w0 - 0.08 до w0 - 0.035)
+    w_kam_top = round(w0 - 0.035, 4)
     if st == 'ul':
-        D.kor('obolochka', KAM, a0 - 0.08, a1 + 0.08, v0 - 0.09, v0 + 0.05, w0 - 0.08, w0, 0.01)
+        D.kor('obolochka', KAM, a0 - 0.08, a1 + 0.08, v0 - 0.09, v0 + 0.05, w0 - 0.08, w_kam_top, 0.01)
     elif st == 'zad':
-        D.kor('obolochka', KAM, a0 - 0.08, a1 + 0.08, v1 - 0.05, v1 + 0.09, w0 - 0.08, w0, 0.01)
+        D.kor('obolochka', KAM, a0 - 0.08, a1 + 0.08, v1 - 0.05, v1 + 0.09, w0 - 0.08, w_kam_top, 0.01)
     elif st == 'sev':
-        D.kor('obolochka', KAM, u0 - 0.09, u0 + 0.05, a0 - 0.08, a1 + 0.08, w0 - 0.08, w0, 0.01)
+        D.kor('obolochka', KAM, u0 - 0.09, u0 + 0.05, a0 - 0.08, a1 + 0.08, w0 - 0.08, w_kam_top, 0.01)
     else:
-        D.kor('obolochka', KAM, u1 - 0.05, u1 + 0.09, a0 - 0.08, a1 + 0.08, w0 - 0.08, w0, 0.01)
+        D.kor('obolochka', KAM, u1 - 0.05, u1 + 0.09, a0 - 0.08, a1 + 0.08, w0 - 0.08, w_kam_top, 0.01)
 
 
 VYSTUP_KOSYAKA = 0.02      # косяк стоит в проёме на 2 см ближе откоса стены: грани не в одной плоскости
@@ -722,7 +739,9 @@ def _dveri(D, proemy, u0, u1, v0, v1, F1):
     for (st, a0, a1, w0, w1, vid) in proemy:
         if not vid.startswith('dver'):
             continue
-        h = w1 - w0 - 0.02
+        # Зазор снизу двери над полом 1.5 см, чтобы низ полотна не совпадал с плоскостью чистого пола
+        w_bot = w0 + 0.015
+        h = w1 - w_bot - 0.015
         shir = a1 - a0
         if st == 'ul':
             pet = (a1 - 0.05, v0 + T - 0.05)
@@ -736,17 +755,22 @@ def _dveri(D, proemy, u0, u1, v0, v1, F1):
         else:
             continue
         kon = (pet[0] + shir * math.cos(ug), pet[1] + shir * math.sin(ug))
-        D.brus('obolochka', BRUS, (pet[0], pet[1], w0 + h / 2), (kon[0], kon[1], w0 + h / 2), h, 0.06, (0, 0, 1), 0.006)
-        # коробка двери: косяки выступают в проём на VYSTUP_KOSYAKA и не доходят до верха проёма на 5 мм (28.09: косяк
-        # заподлицо с откосом стены мигал при проходе камерой — две грани в одной плоскости, z-fighting)
+        w_mid = w_bot + h / 2.0
+        D.brus('obolochka', BRUS, (pet[0], pet[1], w_mid), (kon[0], kon[1], w_mid), h, 0.06, (0, 0, 1), 0.006)
+        # коробка двери: косяки выступают в проём на VYSTUP_KOSYAKA и примыкают к низу перемычки (w1 - 0.015)
+        # снизу начинаются на 5 мм выше уровня пола, чтобы не совпадать с гранью пола (z-fighting)
         kosyaki = ((a0 - 0.14, a0 + VYSTUP_KOSYAKA), (a1 - VYSTUP_KOSYAKA, a1 + 0.14))
         if st in ('ul', 'zad'):
             vv0, vv1 = (v0 - 0.06, v0 + 0.1) if st == 'ul' else (v1 - 0.1, v1 + 0.06)
             for (k0, k1) in kosyaki:
-                D.kor('obolochka', BRUS, k0, k1, vv0, vv1, w0, w1 - 0.005, 0.01)
+                D.kor('obolochka', BRUS, k0, k1, vv0, vv1, w0 + 0.005, w1 - 0.015, 0.01)
+            # деревянный порог дверного проёма
+            D.kor('obolochka', BRUS, a0 - 0.02, a1 + 0.02, vv0, vv1, w0 - 0.03, w0 + 0.012, 0.008)
         else:
             for (k0, k1) in kosyaki:
-                D.kor('obolochka', BRUS, u1 - 0.1, u1 + 0.06, k0, k1, w0, w1 - 0.005, 0.01)
+                D.kor('obolochka', BRUS, u1 - 0.1, u1 + 0.06, k0, k1, w0 + 0.005, w1 - 0.015, 0.01)
+            # деревянный порог дверного проёма
+            D.kor('obolochka', BRUS, u1 - 0.1, u1 + 0.06, a0 - 0.02, a1 + 0.02, w0 - 0.03, w0 + 0.012, 0.008)
 
 
 def _valma(D, p, u0, u1, v0, v1, EV, pered=0.0):
@@ -1381,8 +1405,13 @@ def _karkas_verha(D, r, u0, u1, v0, v1, F1, F2, EV, proemy_verh, bez_pered, bez_
     for st, (a_nach, a_kon), lico, zn in (('ul', (u0, u1), v0, -1), ('zad', (u0, u1), v1, 1),
                                           ('sev', (v0, v1), u0, -1), ('jug', (v0, v1), u1, 1)):
         ok = okna_stor(st)
-        for w in (F2 + 0.08, EV - 0.1):
-            _brus_vdol(D, st, a_nach - 0.04, a_kon + 0.04, lico + zn * 0.06, w, 0.18, 0.2)
+        dveri = [(a0, a1) for (s_, a0, a1, w0, w1, vid) in proemy_verh if s_ == st and vid.startswith('dver')]
+        # верхняя обвязка идет сплошь, а нижний лежень (F2 + 0.08) прерывается у дверных проёмов
+        _brus_vdol(D, st, a_nach - 0.04, a_kon + 0.04, lico + zn * 0.06, EV - 0.1, 0.18, 0.2)
+        lezh_kuski = _svobodno(a_nach - 0.04, a_kon + 0.04, [(d0 - 0.02, d1 + 0.02) for d0, d1 in dveri]) if dveri else [(a_nach - 0.04, a_kon + 0.04)]
+        for (ka, kb) in lezh_kuski:
+            if kb - ka > 0.05:
+                _brus_vdol(D, st, ka, kb, lico + zn * 0.06, F2 + 0.08, 0.18, 0.2)
         stoiki = {a_nach + 0.08, a_kon - 0.08}
         for (a0, a1) in ok:
             stoiki.add(a0 - 0.12)

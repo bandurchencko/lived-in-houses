@@ -58,10 +58,10 @@ class Detali:
         return self._d(g, t='sfera', m=m, c=[round(cu, 4), round(cv, 4), round(cw, 4)], r=r, masht=list(masht),
                        shagi=shagi)
 
-    def okno(self, os_, a0, a1, w0, w1, lico, znak, perepl=1, stavni=False, steklo=True, glub=0.2):
+    def okno(self, os_, a0, a1, w0, w1, lico, znak, perepl=1, stavni=False, steklo=True, glub=0.2, otliv=True):
         """Окно в проёме наружной стены (коробка рамы, стекло, переплёт, отлив, ставни — `dom_detali.okno`)."""
         return self._d('obolochka', t='okno', os=os_, a0=round(a0, 4), a1=round(a1, 4), w0=round(w0, 4),
-                       w1=round(w1, 4), lico=round(lico, 4), znak=znak, perepl=perepl, stavni=bool(stavni), steklo=bool(steklo), glub=glub)
+                       w1=round(w1, 4), lico=round(lico, 4), znak=znak, perepl=perepl, stavni=bool(stavni), steklo=bool(steklo), glub=glub, otliv=bool(otliv))
 
     def cherepica(self, uk, wk, ex, ez, nx, nz, v_ot, v_do, ryadov=4, os_karniza='u'):
         """Ряды настоящей черепицы у карниза одного ската (`dom_detali.cherepica_karniz`)."""

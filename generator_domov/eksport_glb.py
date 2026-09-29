@@ -244,7 +244,7 @@ class Sborka:
         V = s.vertices * np.asarray(masht, float) + np.asarray(c, float)
         self.dob(g, m, V, s.faces)
 
-    def okno(self, os_, a0, a1, w0, w1, lico, znak, perepl=1, stavni=False, gorbylek=True, steklo=True, glub=0.2):
+    def okno(self, os_, a0, a1, w0, w1, lico, znak, perepl=1, stavni=False, gorbylek=True, steklo=True, glub=0.2, otliv=True):
         """Как `ue/dom_detali.okno`: рама, стекло, переплёт, отлив, ставни к стене."""
         g = 'obolochka'
 
@@ -267,7 +267,12 @@ class Sborka:
             k(BRUS, pj - 0.035, pj + 0.035, -glub, -(glub - 0.05), w0 + 0.05, w1 - 0.05)
         if gorbylek and steklo:
             k(BRUS, a0 + 0.05, a1 - 0.05, -glub, -(glub - 0.05), w0 + (w1 - w0) * 0.62, w0 + (w1 - w0) * 0.62 + 0.05)
-        k(BRUS, a0 - 0.06, a1 + 0.06, -0.02, 0.07, w0 - 0.06, w0)
+        if otliv:
+            # Сплошной деревянный подоконник до самого окна: от рамы (-(glub + 0.04)) до фасада и выступающие ушки
+            w_top = round(w0 + 0.015, 4)
+            w_bot = round(w0 - 0.035, 4)
+            k(BRUS, a0, a1, -(glub + 0.04), -0.02, w_bot, w_top)
+            k(BRUS, a0 - 0.06, a1 + 0.06, -0.02, 0.07, w_bot, w_top)
         if stavni:
             for p0, p1 in ((a0 - (a1 - a0) / 2 - 0.02, a0 - 0.02), (a1 + 0.02, a1 + (a1 - a0) / 2 + 0.02)):
                 k(KRAS, p0, p1, 0.02, 0.06, w0, w1)
@@ -318,7 +323,7 @@ class Sborka:
             self.sfera(g, m, d['c'], d['r'], d.get('masht', (1, 1, 1)), d.get('shagi', 3))
         elif t == 'okno':
             self.okno(d['os'], d['a0'], d['a1'], d['w0'], d['w1'], d['lico'], d['znak'], d.get('perepl', 1),
-                      d.get('stavni', False), steklo=d.get('steklo', True), glub=d.get('glub', 0.2))
+                      d.get('stavni', False), steklo=d.get('steklo', True), glub=d.get('glub', 0.2), otliv=d.get('otliv', True))
         elif t == 'cherepica':
             self.cherepica(d['uk'], d['wk'], d['ex'], d['ez'], d['nx'], d['nz'], d['v_ot'], d['v_do'],
                            ryadov=d['ryadov'], os_karniza=d['os_karniza'])
