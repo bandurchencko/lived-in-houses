@@ -556,7 +556,7 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
     _glyby_u_uglov(D, random.Random(p['zerno_melochej'] + 101), u0, u1, v0, v1,     # своё зерно: остальное не сдвигается
                    zanyato=[(u0 - 2.0, u1 + 3.0, v0 - 3.5, v0 + 0.2), (u1, u1 + 4.5, v0 - 3.5, v1 + 1.0)])
     bez_pered = [(u0 - 1.0, u1 + 1.0)] if kz == 'galereya' else ([(tf_u0 - 0.2, u1 + 1.0)] if kz == 'ugol' else [])
-    _karkas_verha(D, r, u0, u1, v0, v1, F1, F2, EV, proemy_verh, bez_pered, kz == 'galereya')
+    _karkas_verha(D, r, u0, u1, v0, v1, F1, F2, EV, proemy_verh, bez_pered, kz == 'galereya', stavni=p['stavni'])
 
     # ---------------- нутро: зал (место у огня, общий стол, стойка), комнаты ----------------
     stol_c = _mebel_zala(D, r, S_in, ca, ui0, ui1, vi0, vi1, L_sh, kb_u0, kb_v0, pov_u1, P, F1, dv_u0, dv_u1, kl_v_pr)
@@ -1397,11 +1397,11 @@ def _kamen_na_stene(D, st, a0, a1, w0, w1, vy, u0, u1, v0, v1):
         D.kor('obolochka', KAM, u1 - 0.05, u1 + vy, a0, a1, w0, w1, 0.01)
 
 
-def _karkas_verha(D, r, u0, u1, v0, v1, F1, F2, EV, proemy_verh, bez_pered, bez_kronshtejnov_pered):
-    """Тёмный брус верха: лежень, обвязка, стойки на углах и у окон (не поперёк окна), выпуски балок перекрытия
-    15–30 см, кронштейны под свесом. bez_pered — куски фасада, где выпусков нет (под галереей и террасой)."""
+def _karkas_verha(D, r, u0, u1, v0, v1, F1, F2, EV, proemy_verh, bez_pered, bez_kronshtejnov_pered, stavni=True):
+    """Тёмный брус верха: лежень, обвязка, стойки на углах и у окон (не поперёк окна и ставней), выпуски балок
+    перекрытия 15–30 см, кронштейны под свесом. bez_pered — куски фасада, где выпусков нет (под галереей и террасой)."""
     def okna_stor(st):
-        return [(a0, a1) for (s_, a0, a1, w0, w1, vid) in proemy_verh if s_ == st]
+        return [(a0, a1, vid) for (s_, a0, a1, w0, w1, vid) in proemy_verh if s_ == st and vid.startswith('okno')]
     for st, (a_nach, a_kon), lico, zn in (('ul', (u0, u1), v0, -1), ('zad', (u0, u1), v1, 1),
                                           ('sev', (v0, v1), u0, -1), ('jug', (v0, v1), u1, 1)):
         ok = okna_stor(st)
@@ -1412,13 +1412,35 @@ def _karkas_verha(D, r, u0, u1, v0, v1, F1, F2, EV, proemy_verh, bez_pered, bez_
         for (ka, kb) in lezh_kuski:
             if kb - ka > 0.05:
                 _brus_vdol(D, st, ka, kb, lico + zn * 0.06, F2 + 0.08, 0.18, 0.2)
-        stoiki = {a_nach + 0.08, a_kon - 0.08}
-        for (a0, a1) in ok:
-            stoiki.add(a0 - 0.12)
-            stoiki.add(a1 + 0.12)
-        for a in sorted(stoiki):
-            if any(a0 - 0.05 < a < a1 + 0.05 for (a0, a1) in ok):
+
+        # Зоны проёмов, куда стойка каркаса попадать не должна (окна с распахнутыми ставнями и двери)
+        zapret = []
+        for (a0, a1, vid) in ok:
+            w_sh = ((a1 - a0) / 2.0 + 0.02) if (stavni and vid == 'okno') else 0.02
+            zapret.append((a0 - w_sh, a1 + w_sh))
+        for (d0, d1) in dveri:
+            zapret.append((d0 - 0.05, d1 + 0.05))
+
+        # Стойки: обязательно угловые + обрамление оконных групп
+        kandidaty = [a_nach + 0.08, a_kon - 0.08]
+        for (a0, a1, vid) in ok:
+            w_sh = ((a1 - a0) / 2.0 + 0.02) if (stavni and vid == 'okno') else 0.02
+            # отступ 0.14 даёт аккуратный зазор ~6 см между распахнутой ставней и стойкой шириной 16 см
+            kandidaty.append(round(a0 - w_sh - 0.14, 3))
+            kandidaty.append(round(a1 + w_sh + 0.14, 3))
+
+        itog_stoiki = []
+        for a in sorted(kandidaty):
+            if a < a_nach + 0.05 or a > a_kon - 0.05:
                 continue
+            # Полуширина стойки 0.08: стойка занимает [a - 0.08, a + 0.08]
+            if any(z0 < a + 0.08 and a - 0.08 < z1 for z0, z1 in zapret):
+                continue
+            if any(abs(a - s) < 0.22 for s in itog_stoiki):
+                continue
+            itog_stoiki.append(a)
+
+        for a in itog_stoiki:
             _stojka(D, st, a, lico + zn * 0.06, F2 + 0.15, EV - 0.18)
         if st in ('ul', 'zad'):
             vyp = r.uniform(*STIL['vypusk_balok'])
