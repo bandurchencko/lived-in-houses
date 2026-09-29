@@ -38,10 +38,10 @@
 - **A house from your picture** — `generator_domov/obraz.py`: an AI that sees images (any chat by hand, Claude Code, a
   local Ollama model or the Anthropic API) reads a picture into a passport; the generator builds the nearest house it
   knows, clamped to safe ranges, rolling numbers back to the seed until every check passes; picture colours go into the
-  palette. Two examples from our concept art.
+  palette. Two examples from the project's concept art.
 - **Textured browser demo** — the glTF carries UVs laid along each face; the viewer dresses houses in CC0 Poly Haven
   textures by style, tinted to the house colours, lit by a CC0 sky with filmic tone mapping; drop your own `.glb`.
-- README: why we built it, what we tried, when it helps, engines and formats, who does what from a picture to a house.
+- README: why I built it, what I tried, when it helps, engines and formats, who does what from a picture to a house.
 
 ## 0.1 — 28 September 2026 (midday)
 

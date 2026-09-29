@@ -3,7 +3,7 @@
 **A rule-based generator of enterable village houses — floor plans, rooms, furniture and gameplay checks — for games.**
 Export to glTF in seconds, look inside in the browser, or build straight into Unreal Engine 5.
 
-> *"A house becomes interesting when its layout lets you imagine the life inside."* — Astra, our AI art-direction assistant
+> *"A house becomes interesting when its layout lets you imagine the life inside."* — Astra, my AI art-direction assistant
 
 [Русская версия](README.ru.md) · **[Live demo — open a house in your browser](https://bandurchencko.github.io/lived-in-houses/)** · **[Trailer, 50 s](https://bandurchencko.github.io/lived-in-houses/lived-in-houses.mp4)**
 
@@ -19,8 +19,8 @@ Export to glTF in seconds, look inside in the browser, or build straight into Un
 - **How to use it:** open the [live demo](https://bandurchencko.github.io/lived-in-houses/) (no install) → or
   `pip install -r requirements.txt` and export a house to glTF for Unreal, Unity, Godot or Blender → or show it your own
   picture and get the nearest house it knows (`python -m generator_domov.obraz my-house.jpg`).
-- **What's next:** we develop it together with our game — new families and styles as our villages need them — and we
-  will keep publishing the tools we make along the way.
+- **What's next:** I develop it together with my game — new families and styles as its villages need them — and I
+  will keep publishing the tools I make along the way.
 
 | Tavern with forge, seed 13 | Cut at 3.3 m: the ground floor inside |
 |---|---|
@@ -28,13 +28,13 @@ Export to glTF in seconds, look inside in the browser, or build straight into Un
 | **Thatched garden house, seed 1818** | **Tavern, seed 7 — another composition** |
 | ![Garden house](docs/obrazy/garden-house-1818.png) | ![Tavern seed 7](docs/obrazy/tavern-7-annex.png) |
 
-## Why we built it
+## Why I built it
 
-We are making a fairy-tale world where people, NPCs and AI characters **live inside** the houses. A house there is not a
+I am making a fairy-tale world where people, NPCs and AI characters **live inside** the houses. A house there is not a
 backdrop: you open the door, walk into the hall, sit at the table by the hearth, climb the stairs to the bedroom. So
 every house needs a real inside — rooms that make sense, doors a character fits through, stairs you can actually climb.
 
-We tried everything we could find before writing our own:
+I tried everything I could find before writing my own:
 
 - **AI image-to-3D** (Tripo, TRELLIS.2, Hunyuan3D). A beautiful house in a minute — but it is a statue: solid inside,
   no rooms, the door is painted on. You cannot walk in.
@@ -42,10 +42,10 @@ We tried everything we could find before writing our own:
   and nothing like a village where you can feel how people live.
 - **Ready-made asset packs.** Great quality, but ten to thirty fixed houses: the whole world starts to look copy-pasted,
   interiors are often empty, and the style is someone else's.
-- **Building by hand** from our own modules. Beautiful and exactly our style — but days per house. We once spent two days
-  on three houses.
+- **Building by hand** from my own modules. Beautiful and exactly my style — but days per house. Three houses once took
+  two days.
 
-So we wrote a program that **knows how a house is arranged**: which rooms a tavern or a family home needs, where the
+So I made a program that **knows how a house is arranged**: which rooms a tavern or a family home needs, where the
 hearth and the table go, how the stairs climb, where the windows look — and that **checks itself** (a character reaches
 every room, the stairs are walkable, nothing blocks a window). The look is set by numbers taken from concept art —
 plinth height, window sizes, roof pitch, materials — and every seed gives a new house in the same style. One house takes
@@ -85,7 +85,7 @@ Give it a family, a seed and a style — it builds a whole house you can walk in
    tread ≥ 0.27 m), doors ≥ 0.95 m, living rooms have windows, the hearth and the table are seen from the entrance,
    nothing blocks a window.
 5. **Output** — glTF/GLB in about a second (this repository), or an Unreal Engine 5 build in 8–30 s per house (the
-   engine-side builder we use in our game; see *Unreal* below).
+   engine-side builder I use in my game; see *Unreal* below).
 
 Two families today: **tavern with forge** (four compositions) and **house with a yard** (porch, garden or workshop;
 shed, beds, wattle fence; by place — a stable under the canopy, beehives in the garden, a poultry coop), in two styles — **red stone** (lime plaster, dark timber, terracotta tiles) and **thatched
@@ -97,10 +97,10 @@ The generator itself does not look at pictures. It reads a **passport**: the fam
 (porch, garden, workshop, gallery) and the **style numbers** — plinth height, window sizes, roof type and pitch, eaves,
 materials and colours. Pictures come in one step earlier:
 
-1. **You show a reference** — a photo, a sketch, a concept painting — to an art director. For us that is Astra (an AI
-   that can see images) together with the owner; it can just as well be you, or any AI that reads images.
+1. **You show a reference** — a photo, a sketch, a concept painting — to an art director. For me that is Astra (an AI
+   that can see images), and the last word is mine; it can just as well be you, or any AI that reads images.
 2. **The art director turns the picture into numbers**: "red stone plinth 0.6–0.9 m, windows 0.65–0.95 m with shutters,
-   hip roof at 22–30°, a gallery along the front". That is the style file (`stil_mangala.py` is our example).
+   hip roof at 22–30°, a gallery along the front". That is the style file (`stil_mangala.py` is the example).
 3. **The generator builds as many houses as you like in that style** — every seed a new one, every one with a real
    interior and passing its checks. A second per house.
 4. **You look** (the browser viewer or your engine) and say what is off — and the numbers change, not the houses.
@@ -137,7 +137,7 @@ this one follows the picture's style and gives you a house you can live in.
 | **Runs on** | Python (tested on 3.13) with `numpy`, `trimesh`, `pillow`; `pytest` for the tests. No engine needed to generate. |
 | **Main output** | **glTF 2.0 binary (`.glb`)** — metres, Y-up, entrance facing −Z; one node per group (*shell, partitions, floors, roof, furniture, props, greenery, ground*) so you can hide the roof or the walls; PBR materials per material slot (base colour, roughness, metallic, glowing embers in the hearth). About 13–20 thousand triangles and under 1 MB per house. |
 | **Also** | JSON of every stage — passport, plan (rooms, doors, stairs, parts), the list of details, the check results (`python -m generator_domov dom …`); plan sheets as images. |
-| **Unreal Engine 5** | Drag the `.glb` into the Content Browser (glTF import). In our own game a native builder turns the same details into Unreal meshes with Geometry Script — one mesh per group, textured materials, lights — 8–30 s per house (UE 5.8; not in this first release). |
+| **Unreal Engine 5** | Drag the `.glb` into the Content Browser (glTF import). In my own game a native builder turns the same details into Unreal meshes with Geometry Script — one mesh per group, textured materials, lights — 8–30 s per house (UE 5.8; not in this first release). |
 | **Unity** | Import the `.glb` with the official glTFast package. |
 | **Godot 4** | Drop the `.glb` into the project — imported natively. |
 | **Blender** | File → Import → glTF 2.0. |
@@ -150,7 +150,7 @@ this one follows the picture's style and gives you a house you can live in.
 
 ```bash
 pip install -r requirements.txt
-python -m pytest generator_domov -q                  # 333 tests, ~2 s
+python -m pytest generator_domov -q                  # 364 tests, ~16 s
 python primery.py                                    # rebuild the examples into docs/glb
 python -m generator_domov.eksport_glb traktir 13 --kompoz=galereya --vyhod=tavern.glb
 python -m generator_domov.eksport_glb dom-dvor 1818 --chast=sad --sad=jug --stil=kolybel --vyhod=garden-house.glb
@@ -176,7 +176,7 @@ dom_v_glb(details, 'tavern.glb', 'mangala', True, plan=plan)
 
 The code is written in Russian transliteration (`sobrat` = build, `plan`, `detali` = details, `proverki` = checks,
 `krysha` = roof, `traktir` = tavern, `dom_dvor` = house with a yard) and its comments are in Russian: it is the working
-code of our game, published as it is. The pipeline above is the map; each module starts with a docstring describing it.
+code of my game, published as it is. The pipeline above is the map; each module starts with a docstring describing it.
 
 | Module | What it is |
 |---|---|
@@ -191,32 +191,32 @@ code of our game, published as it is. The pipeline above is the map; each module
 
 ## Unreal
 
-In our game the same detail records are built in Unreal Engine 5.8 by a Python builder with Geometry Script: one mesh
-per group, lights at the hearth, lamps and windows, 8–30 s per house, placed on terrain by our settlement planner.
-That builder depends on our project's materials and is not part of this first release; the GLB path imports into
+In my game the same detail records are built in Unreal Engine 5.8 by a Python builder with Geometry Script: one mesh
+per group, lights at the hearth, lamps and windows, 8–30 s per house, placed on terrain by my settlement planner.
+That builder depends on my project's materials and is not part of this first release; the GLB path imports into
 Unreal directly.
 
-## Prior art — we are not the first
+## Prior art — I am not the first
 
-Rule-based buildings with interiors are an old idea, and we stand on these shoulders (we found most of them *after*
-building ours — a lesson we took): Merrell et al. 2010 (room programme → floor plan → house), Lopes et al. 2010,
+Rule-based buildings with interiors are an old idea, and I stand on these shoulders (I found most of them *after*
+building mine — a lesson learned): Merrell et al. 2010 (room programme → floor plan → house), Lopes et al. 2010,
 Tutenel et al. 2011, Emilien et al. 2012 (villages on terrain), Daggerfall, Shadows of Doubt, THE FINALS,
 [Infinigen Indoors](https://github.com/princeton-vl/infinigen), [ProcTHOR](https://github.com/allenai/procthor),
 [Procedural-Cities](https://github.com/magnificus/Procedural-Cities), [Veloren](https://veloren.net/),
-[watabou's generators](https://watabou.itch.io/). What we have not found ready-made is this combination as an open tool
+[watabou's generators](https://watabou.itch.io/). What I have not found ready-made is this combination as an open tool
 for UE5: rural houses with a household (hearth, forge, yard, shed, garden, gallery) by seed, gameplay checks on every
 house, and a village planner on real terrain around them (coming in the next releases).
 
 ## How it was made
 
-After several days of searching, we built a working generator in one night. The owner set the image and accepted the
+After several days of searching, a working generator was built in one night. I set the image and accepted the
 result; Claude (Anthropic) implemented the rules; Astra analysed the composition.
 
 - **Oleksandr Bandurchenko** — owner, direction, acceptance
 - **Claude** (Anthropic, via Claude Code) — implementation
 - **Astra** — AI assistant for art direction and visual review
 
-Part of **Сад миров · Garden of Worlds**, a fairy-tale realistic world we are building in Unreal Engine 5
+Part of **Сад миров · Garden of Worlds**, a fairy-tale realistic world I am building in Unreal Engine 5
 ([YouTube @sadmirov](https://www.youtube.com/@sadmirov), [Telegram](https://t.me/sadmirov)).
 
 ## Next
