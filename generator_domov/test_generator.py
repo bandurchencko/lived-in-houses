@@ -151,3 +151,24 @@ def test_stoiki_verha_ne_peresekayut_stavni(zerno):
             assert not (p_span[1] > sh_l[0] and p_span[0] < sh_l[1]), (zerno, p_span, sh_l)
             assert not (p_span[1] > sh_r[0] and p_span[0] < sh_r[1]), (zerno, p_span, sh_r)
 
+
+@pytest.mark.parametrize('zerno', range(0, 30))
+def test_dveri_galerei_ne_perekryvayut_okna(zerno):
+    """Полотна открытых дверей галереи (2-й этаж) распахиваются внутрь комнат и не перекрывают соседние окна."""
+    pas, plan, D = traktir.sobrat(zerno, 'galereya')
+    F2 = plan['razmery']['F2']
+    okna_2 = [p for p in plan['proemy'] if p['vid'] == 'okno' and p['storona'] == 'ul' and p['w0'] >= F2]
+    dver_brusi = [d for d in D.spisok if d.get('t') == 'brus' and d.get('os') == [0, 0, 1]
+                  and d.get('tol') == 0.06 and d.get('p1', [0, 0, 0])[2] >= F2]
+    for db in dver_brusi:
+        u_min = min(db['p1'][0], db['p2'][0]) - 0.05
+        u_max = max(db['p1'][0], db['p2'][0]) + 0.05
+        w_mid = db['p1'][2]
+        h = db['sh']
+        w_min = w_mid - h / 2.0
+        w_max = w_mid + h / 2.0
+        for o in okna_2:
+            u_overlap = min(u_max, o['a1']) - max(u_min, o['a0'])
+            w_overlap = min(w_max, o['w1']) - max(w_min, o['w0'])
+            assert not (u_overlap > 0.02 and w_overlap > 0.02), (zerno, db, o)
+
