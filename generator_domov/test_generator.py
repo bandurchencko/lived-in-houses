@@ -124,3 +124,67 @@ def test_lestnicy_i_poly_ne_migayut(zerno):
         poly = [x for x in raz if D.spisok[x[3]]['g'] == 'poly' and D.spisok[x[4]]['g'] == 'poly']
         assert not poly, [(D.spisok[x[3]]['b'], D.spisok[x[4]]['b']) for x in poly[:3]]
         assert len(raz) <= 12, len(raz)
+
+
+@pytest.mark.parametrize('zerno', range(0, 30))
+def test_stoiki_verha_ne_peresekayut_stavni(zerno):
+    """Стойки фахверка верха обрамляют окна и не врезаются в распахнутые ставни (зазор ~6 см)."""
+    pas, plan, D = traktir.sobrat(zerno)
+    F2 = plan['razmery']['F2']
+    okna = [d for d in D.spisok if d['t'] == 'okno' and d.get('stavni') and d['w0'] >= F2]
+    stoiki = [d for d in D.spisok if d['t'] == 'brus' and d['g'] == 'obolochka'
+              and abs(d['p1'][0] - d['p2'][0]) < 1e-4 and abs(d['p1'][1] - d['p2'][1]) < 1e-4
+              and d['p1'][2] >= F2]
+    for s in stoiki:
+        u_p, v_p = s['p1'][0], s['p1'][1]
+        w0_p, w1_p = s['p1'][2], s['p2'][2]
+        for o in okna:
+            if not (w0_p < o['w1'] and w1_p > o['w0']):
+                continue
+            if abs(o['lico'] - (v_p if o['os'] == 'u' else u_p)) > 0.15:
+                continue
+            pos = u_p if o['os'] == 'u' else v_p
+            a0, a1 = o['a0'], o['a1']
+            sh_l = (a0 - (a1 - a0) / 2.0 - 0.02, a0 - 0.02)
+            sh_r = (a1 + 0.02, a1 + (a1 - a0) / 2.0 + 0.02)
+            p_span = (pos - 0.075, pos + 0.075)
+            assert not (p_span[1] > sh_l[0] and p_span[0] < sh_l[1]), (zerno, p_span, sh_l)
+            assert not (p_span[1] > sh_r[0] and p_span[0] < sh_r[1]), (zerno, p_span, sh_r)
+
+
+@pytest.mark.parametrize('zerno', range(0, 30))
+def test_dveri_galerei_ne_perekryvayut_okna(zerno):
+    """Полотна открытых дверей галереи (2-й этаж) распахиваются внутрь комнат и не перекрывают соседние окна."""
+    pas, plan, D = traktir.sobrat(zerno, 'galereya')
+    F2 = plan['razmery']['F2']
+    okna_2 = [p for p in plan['proemy'] if p['vid'] == 'okno' and p['storona'] == 'ul' and p['w0'] >= F2]
+    dver_brusi = [d for d in D.spisok if d.get('t') == 'brus' and d.get('os') == [0, 0, 1]
+                  and d.get('tol') == 0.06 and d.get('p1', [0, 0, 0])[2] >= F2]
+    for db in dver_brusi:
+        u_min = min(db['p1'][0], db['p2'][0]) - 0.05
+        u_max = max(db['p1'][0], db['p2'][0]) + 0.05
+        w_mid = db['p1'][2]
+        h = db['sh']
+        w_min = w_mid - h / 2.0
+        w_max = w_mid + h / 2.0
+        for o in okna_2:
+            u_overlap = min(u_max, o['a1']) - max(u_min, o['a0'])
+            w_overlap = min(w_max, o['w1']) - max(w_min, o['w0'])
+            assert not (u_overlap > 0.02 and w_overlap > 0.02), (zerno, db, o)
+
+
+@pytest.mark.parametrize('kompoz', traktir.KOMPOZ)
+@pytest.mark.parametrize('zerno', range(0, 30))
+def test_vyveska_prikreplena_k_stolbu(kompoz, zerno):
+    """Вывеска трактира не висит в воздухе: прут кованого кронштейна надёжно закреплён в деревянном столбе."""
+    pas, plan, D = traktir.sobrat(zerno, kompoz)
+    rods = [d for d in D.spisok if d.get('t') == 'cil_os' and d.get('m') == traktir.ZHEL and d.get('r') == 0.02
+            and abs(d['p1'][2] - d['p2'][2]) < 1e-4 and 2.45 <= d['p1'][2] <= 2.6]
+    assert len(rods) == 1, (kompoz, zerno, len(rods))
+    p1 = rods[0]['p1']
+    posts = [d for d in D.spisok if d.get('t') == 'brus' and d.get('g') == 'obolochka'
+             and abs(d['p1'][0] - d['p2'][0]) < 1e-4 and abs(d['p1'][1] - d['p2'][1]) < 1e-4
+             and d['p1'][2] <= p1[2] <= d['p2'][2]
+             and abs(d['p1'][0] - p1[0]) < 0.15 and abs(d['p1'][1] - p1[1]) < 0.15]
+    assert posts, (kompoz, zerno, p1, 'Прут вывески не закреплён в столбе!')
+
