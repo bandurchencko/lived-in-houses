@@ -172,3 +172,19 @@ def test_dveri_galerei_ne_perekryvayut_okna(zerno):
             w_overlap = min(w_max, o['w1']) - max(w_min, o['w0'])
             assert not (u_overlap > 0.02 and w_overlap > 0.02), (zerno, db, o)
 
+
+@pytest.mark.parametrize('kompoz', traktir.KOMPOZ)
+@pytest.mark.parametrize('zerno', range(0, 30))
+def test_vyveska_prikreplena_k_stolbu(kompoz, zerno):
+    """Вывеска трактира не висит в воздухе: прут кованого кронштейна надёжно закреплён в деревянном столбе."""
+    pas, plan, D = traktir.sobrat(zerno, kompoz)
+    rods = [d for d in D.spisok if d.get('t') == 'cil_os' and d.get('m') == traktir.ZHEL and d.get('r') == 0.02
+            and abs(d['p1'][2] - d['p2'][2]) < 1e-4 and 2.45 <= d['p1'][2] <= 2.6]
+    assert len(rods) == 1, (kompoz, zerno, len(rods))
+    p1 = rods[0]['p1']
+    posts = [d for d in D.spisok if d.get('t') == 'brus' and d.get('g') == 'obolochka'
+             and abs(d['p1'][0] - d['p2'][0]) < 1e-4 and abs(d['p1'][1] - d['p2'][1]) < 1e-4
+             and d['p1'][2] <= p1[2] <= d['p2'][2]
+             and abs(d['p1'][0] - p1[0]) < 0.15 and abs(d['p1'][1] - p1[1]) < 0.15]
+    assert posts, (kompoz, zerno, p1, 'Прут вывески не закреплён в столбе!')
+

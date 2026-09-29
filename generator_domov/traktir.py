@@ -488,8 +488,9 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
     # ---------------- уровни и открытые пространства по композиции ----------------
     GL = 1.6
     if kz == 'naves':
-        _pomost_i_krylco(D, u0, v0, P, NV0, kr_u0, kr_u1, F1, dv_u0, dv_u1)
-        _vyveska(D, dv_u1 + 0.25, NV0 + 0.42, 2.5)
+        stolby = _pomost_i_krylco(D, u0, v0, P, NV0, kr_u0, kr_u1, F1, dv_u0, dv_u1)
+        st_r = [s for s in stolby if s >= dv_u1]
+        _vyveska(D, st_r[0] if st_r else stolby[-1], NV0 + 0.42, 2.5)
         _naves_kuzni(D, p, nk_u0, nk_u1, v0, P, NV0)
         LU0, LU1 = u1 + 0.1, u1 + 1.35
         vg0 = _lestnica_naruzh(D, LU0, LU1, 0.25, 1, F2, 34.0, 1.25)
@@ -504,8 +505,9 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
         bok_kam = [[u1 + 3.6, -2.8, 2.1], [u1 + 0.6, 3.2, 2.2]]
         kr_pered = NV0 - 0.25
     elif kz == 'galereya':
-        _galereya_perednyaya(D, r, u0, u1, v0, P, F2, EV, g, dv_u0, dv_u1, tg)
-        _vyveska(D, dv_u1 + 0.25, v0 - g + 0.13, 2.5)
+        stolby = _galereya_perednyaya(D, r, u0, u1, v0, P, F2, EV, g, dv_u0, dv_u1, tg)
+        st_r = [s for s in stolby if s >= dv_u1]
+        _vyveska(D, st_r[0] if st_r else stolby[-1], v0 - g + 0.13, 2.5)
         vf, vb = sn(v0 - g - 0.05), sn(ca + 1.6)
         _kuznya_prislon(D, u1, p['lp_w'], vf, vb, Pk, F2 + 0.2, tg_a)
         plan['chasti'] += [{'imya': 'крыльцо', 'etazh': 0, 'b': [u0, u1, v0 - g, v0]},
@@ -566,7 +568,7 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
     _koridor(D, ui0, ui1, vi1, L_sh, kor_v0, F2, EV, kz)
     _melochi_ulicy(D, r, kz, kr_u0, kr_u1, v0, P, NV0, dv_u0, dv_u1)
     D.istochnik('zal', (ui0 + L_sh + ui1) / 2.0, (vi0 + kb_v0) / 2.0, F1 - 0.9, 2.5, 600.0, (255, 215, 175), False)
-    D.istochnik('fonar', dv_u0 - 0.35, v0 - 0.25, P + 2.2, 4.0, 330.0, (255, 196, 140), False)
+    D.istochnik('fonar', dv_u1 + 0.35, v0 - 0.35, P + 2.12, 4.0, 330.0, (255, 196, 140), False)
 
     # утварь Blacksmith Props — точки для dk1_utvar_fab_ue.py (в осях дома до отражения)
     plan['utvar'] = {'nakovalnya': list(S_out.p(ca - 0.1, 1.6, w_gorna)), 'kad': list(S_out.p(ca + 1.35, 0.7, w_gorna)),
@@ -1028,20 +1030,19 @@ def _kozyrek_i_vyveska(D, v0, P, NV0, dv_u0, dv_u1, F1):
     D.brus('obolochka', BRUS, (hg0 + 0.05, vf + 0.25, we - 0.12), (hg1 - 0.05, vf + 0.25, we - 0.12), 0.16, 0.2, (0, 1, 0))
     # вывеска: кронштейн от столба козырька наружу, доска на двух цепях
     xs = hg1 - 0.14
-    D.cil_os('obolochka', ZHEL, (xs, vf + 0.25, 2.55), (xs + 0.85, vf + 0.25, 2.55), 0.02, 6)
-    for dx in (0.3, 0.75):
-        D.cil_os('obolochka', ZHEL, (xs + dx, vf + 0.25, 2.55), (xs + dx, vf + 0.25, 2.38), 0.006, 4)
-    D.kor('obolochka', KRAS, xs + 0.22, xs + 0.83, vf + 0.22, vf + 0.28, 1.95, 2.38, 0.01)
-    D.kor('obolochka', ZHEL, xs + 0.2, xs + 0.85, vf + 0.21, vf + 0.29, 2.36, 2.4)
+    _vyveska(D, xs, vf + 0.25, 2.55)
 
 
 def _vyveska(D, u, v, w):
-    """Вывеска трактира на кронштейне: железный прут наружу, доска на двух цепях."""
-    D.cil_os('obolochka', ZHEL, (u, v, w), (u + 0.8, v, w), 0.02, 6)
-    for dx in (0.25, 0.7):
+    """Вывеска трактира на кронштейне: железный прут от столба наружу, доска на двух цепях."""
+    # Прут кронштейна начинается в центре столба (u, v) и выступает наружу (+u) на 0.85 м
+    D.cil_os('obolochka', ZHEL, (u, v, w), (u + 0.85, v, w), 0.02, 6)
+    # Цепи вывески
+    for dx in (0.3, 0.75):
         D.cil_os('obolochka', ZHEL, (u + dx, v, w), (u + dx, v, w - 0.17), 0.006, 4)
-    D.kor('obolochka', KRAS, u + 0.17, u + 0.78, v - 0.03, v + 0.03, w - 0.6, w - 0.17, 0.01)
-    D.kor('obolochka', ZHEL, u + 0.15, u + 0.8, v - 0.04, v + 0.04, w - 0.19, w - 0.15)
+    # Деревянный щит вывески и металлическая оковка
+    D.kor('obolochka', KRAS, u + 0.22, u + 0.83, v - 0.03, v + 0.03, w - 0.6, w - 0.17, 0.01)
+    D.kor('obolochka', ZHEL, u + 0.2, u + 0.85, v - 0.04, v + 0.04, w - 0.19, w - 0.15)
 
 
 def _pomost_i_krylco(D, u0, v0, P, NV0, kr_u0, kr_u1, F1, dv_u0, dv_u1):
@@ -1067,6 +1068,7 @@ def _pomost_i_krylco(D, u0, v0, P, NV0, kr_u0, kr_u1, F1, dv_u0, dv_u1):
         uu = kr_u0 + k * 0.6
         D.brus('obolochka', BRUS, (uu, v0 - 0.05, wv0 - 0.14), (uu, NV0 + 0.15, wv1 - 0.06), 0.08, 0.14, (1, 0, 0), 0.008)
         k += 1
+    return stolby
 
 
 def _naves_kuzni(D, p, nk_u0, nk_u1, v0, P, NV0):
@@ -1225,6 +1227,7 @@ def _galereya_perednyaya(D, r, u0, u1, v0, P, F2, EV, g, dv_u0, dv_u1, tg):
     D.kor('melochi', BRUS, u0 + 0.35, dv_u0 - 0.3, v0 - 0.5, v0 - 0.18, P + 0.42, P + 0.48, 0.008)
     for a_ in (u0 + 0.45, dv_u0 - 0.45):
         D.kor('melochi', BRUS, a_, a_ + 0.1, v0 - 0.45, v0 - 0.23, P, P + 0.42)
+    return stolby
 
 
 def _kuznya_prislon(D, u1, lp_w, vf, vb, Pk, Hw, tg_a):
@@ -1789,7 +1792,16 @@ def _melochi_ulicy(D, r, kz, kr_u0, kr_u1, v0, P, NV0, dv_u0, dv_u1):
         D.sfera('melochi', TRAV, uu, kv, 0.58, 0.3, (1.0, 1.0, 0.7), 3)
         for k in range(5):
             D.sfera('melochi', CVET, uu + 0.16 * math.cos(k * 1.3), kv + 0.16 * math.sin(k * 1.3), 0.72, 0.07, (1, 1, 1), 2)
-    fu = dv_u0 - 0.35
-    D.kor('melochi', ZHEL, fu - 0.04, fu + 0.04, v0 - 0.35, v0 - 0.02, P + 2.35, P + 2.39)
+    fu = dv_u1 + 0.35
+    # настенная пластина крепления к стене
+    D.kor('melochi', ZHEL, fu - 0.06, fu + 0.06, v0 - 0.03, v0, P + 2.26, P + 2.45, 0.005)
+    # горизонтальная балка-кронштейн
+    D.kor('melochi', ZHEL, fu - 0.03, fu + 0.03, v0 - 0.35, v0 - 0.02, P + 2.35, P + 2.39)
+    # подвесное кольцо/штанга, надёжно соединяющее балку и фонарь (устраняет висение в воздухе)
+    D.cil_os('melochi', ZHEL, (fu, v0 - 0.35, P + 2.29), (fu, v0 - 0.35, P + 2.36), 0.012, 6)
+    # пирамидальная крышка фонаря
+    D.kor('melochi', ZHEL, fu - 0.08, fu + 0.08, v0 - 0.43, v0 - 0.27, P + 2.29, P + 2.32)
+    # металлический корпус фонаря (кубик)
     D.kor('melochi', ZHEL, fu - 0.14, fu + 0.14, v0 - 0.49, v0 - 0.21, P + 1.95, P + 2.3)
+    # стекло фонаря
     D.kor('melochi', STEK, fu - 0.11, fu + 0.11, v0 - 0.46, v0 - 0.24, P + 1.98, P + 2.27)
