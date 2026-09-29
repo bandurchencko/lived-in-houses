@@ -104,7 +104,9 @@ materials and colours. Pictures come in one step earlier:
 3. **The generator builds as many houses as you like in that style** — every seed a new one, every one with a real
    interior and passing its checks. A second per house.
 4. **You look** (the browser viewer or your engine) and say what is off — and the numbers change, not the houses.
-5. *(next releases)* **The settlement planner** places the houses along streets, around a square, on terraces.
+5. **Streets** — the sister project **[Lived-in Streets](https://github.com/bandurchencko/lived-in-streets)** places
+   these houses along a whole street from your picture, with yard walls, gates, paths, bushes and props
+   ([walk one in your browser](https://bandurchencko.github.io/lived-in-streets/)). Squares and terraced villages are next.
 
 ### A house from your picture
 
@@ -221,7 +223,8 @@ Part of **Сад миров · Garden of Worlds**, a fairy-tale realistic world 
 
 ## Next
 
-Shared yards and streets → a whole village on two different sites → villages on hillside terraces. Two families today;
+Streets are out ([Lived-in Streets](https://github.com/bandurchencko/lived-in-streets)) → a whole village on two different
+sites → villages on hillside terraces. Two families today;
 more will come as the game needs them.
 
 ## License
