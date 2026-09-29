@@ -366,6 +366,19 @@ def _yashchik_cvetov(D, st, a0, a1, w0, u0, u1, v0, v1):
             D.sfera('melochi', CVET, u1 + 0.18, a0 + (a1 - a0) * (k + 0.5) / 4.0, w0 - 0.02, 0.1, (1.0, 1.0, 0.8), 2)
 
 
+def _mimo_dverej(a_nach, a_kon, proemy, st, w_do, zazor=0.1):
+    """Куски бруса вдоль стены st от a_nach до a_kon в обход проёмов, опущенных ниже w_do (двери): брус лежня на высоте
+    колена поперёк двери не пускал в дом (29.09, проход по улице)."""
+    kuski, a = [], a_nach
+    for (d0, d1) in sorted((a0, a1) for (s_, a0, a1, w0, w1, vid) in proemy if s_ == st and w0 < w_do):
+        if d0 - zazor - a > 0.05:
+            kuski.append((a, d0 - zazor))
+        a = max(a, d1 + zazor)
+    if a_kon - a > 0.05:
+        kuski.append((a, a_kon))
+    return kuski
+
+
 def _fahverk(D, u0, u1, v0, v1, KR, EV, WR, proemy):
     """Тёмный брус по кремовой глине (Астра: «тёмное дерево»): лежень над камнем, обвязка у карниза, стойки на углах и у
     проёмов, раскосы в широких простенках; на щипцах — стойка, ригель и раскосы."""
@@ -376,7 +389,8 @@ def _fahverk(D, u0, u1, v0, v1, KR, EV, WR, proemy):
         else:
             D.brus('obolochka', BRUS, (lico, a0, w0), (lico, a1, w1), 0.1, shir, (1, 0, 0))
     for st, (a_nach, a_kon) in (('ul', (u0, u1)), ('zad', (u0, u1)), ('sev', (v0, v1)), ('jug', (v0, v1))):
-        na_stene(st, a_nach - 0.05, a_kon + 0.05, KR + 0.08, KR + 0.08, 0.2)
+        for a_, b_ in _mimo_dverej(a_nach - 0.05, a_kon + 0.05, proemy, st, KR + 0.2):    # лежень — не поперёк двери
+            na_stene(st, a_, b_, KR + 0.08, KR + 0.08, 0.2)
         # обвязка: на фасадах под скатом — ниже толстого камыша у стены (иначе выходит полосой поверх кровли)
         w_ob = EV - 0.1 if st in ('sev', 'jug') else EV - 0.72
         na_stene(st, a_nach - 0.05, a_kon + 0.05, w_ob, w_ob, 0.2)
@@ -486,7 +500,8 @@ def _peremychki(D, u0, u1, v0, v1, KR, proemy):
         else:
             D.brus('obolochka', BRUS, (lico, a0, w0), (lico, a1, w1), 0.1, shir, (1, 0, 0))
     for st, (a_n, a_k) in (('ul', (u0, u1)), ('zad', (u0, u1)), ('sev', (v0, v1)), ('jug', (v0, v1))):
-        na_stene(st, a_n - 0.05, a_k + 0.05, KR + 0.06, KR + 0.06, 0.12)
+        for a_, b_ in _mimo_dverej(a_n - 0.05, a_k + 0.05, proemy, st, KR + 0.2):          # лежень — не поперёк двери
+            na_stene(st, a_, b_, KR + 0.06, KR + 0.06, 0.12)
     for (st, a0, a1, w0, w1, vid) in proemy:
         if vid == 'okno_cherdak':
             continue

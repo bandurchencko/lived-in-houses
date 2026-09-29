@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.4 — not released yet (29 September 2026)
+
+- **Doors are no longer blocked by the sill beam** — the dark timber beam laid over the stone plinth (and the plinth beam
+  of the red-stone look) ran across the entrance at knee height, so a character walking in through a door without a
+  porch was stopped (found while walking a generated street in the browser). The beam now stops at the door posts; a
+  test keeps every sill beam out of door openings.
+
 ## 0.3.3 — 28 September 2026 (night)
 
 - **Stairs no longer flicker** — every step was a box from its own nosing to the end of the flight, so the side faces

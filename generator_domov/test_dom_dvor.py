@@ -87,3 +87,28 @@ def test_osobye_detali_dvora(chast, osoboe, chast_imya):
     assert all(x['ok'] for x in proverit(pas, plan, D))
     pas0, plan0, D0 = dom_dvor.sobrat(1414, chast, [], None, 'jug' if chast != 'krylco' else None, 'kolybel')
     assert not any(ch['imya'] == chast_imya for ch in plan0['chasti'])
+
+
+def test_lezhen_ne_peregorazhivaet_dver():
+    """Лежень фахверка (и лежень облика Мангалы) идёт по стене, но не поперёк двери: в дом можно войти с улицы
+    (29.09, проход по улице: брус на высоте колена стоял поперёк входа у домов без крыльца)."""
+    for stil in ('kolybel', 'mangala'):
+        for zerno in range(1, 25):
+            for chast in ('krylco', 'sad', 'masterskaya'):
+                pas, plan, D = dom_dvor.sobrat(zerno, chast, [], None, None, stil)
+                p = pas['parametry']
+                v0 = plan['razmery']['korpus'][2]
+                dveri = [(pr['a0'], pr['a1']) for pr in plan['proemy'] if pr['storona'] == 'ul' and pr['vid'].startswith('dver')]
+                if p['s'] < 0:
+                    dveri = [(dom_dvor.SU_D - a1, dom_dvor.SU_D - a0) for a0, a1 in dveri]
+                for d in D.spisok:
+                    if d['t'] != 'brus' or d['g'] != 'obolochka':
+                        continue
+                    (u1, v1_, w1), (u2, v2_, w2) = d['p1'], d['p2']
+                    if abs(w1 - w2) > 1e-6 or not (p['P'] + 0.05 < w1 < p['P'] + 2.0) or abs(v1_ - v2_) > 1e-6:
+                        continue
+                    if abs(v1_ - (v0 - 0.04)) > 0.02:
+                        continue
+                    lo, hi = sorted((u1, u2))
+                    for a0, a1 in dveri:
+                        assert hi <= a0 + 0.02 or lo >= a1 - 0.02, (stil, zerno, chast, (lo, hi), (a0, a1), w1)
