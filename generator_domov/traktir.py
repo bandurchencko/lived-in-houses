@@ -164,7 +164,12 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
     L_sh = 1.25
     podem = F2 - P
     dl = sn(podem / math.tan(math.radians(STIL['lestnica_ugol'])), 0.01)
-    st_v1 = vi1 - 0.05
+    # Верхняя площадка лестницы и ширина коридора
+    w_kor = sn(max(1.3, min(2.0, (vi1 - vi0) * 0.18)))
+    kor_v0 = sn(vi1 - w_kor)
+    zapas_v = (vi1 - vi0) - dl
+    top_land = sn(min(w_kor, max(0.55, zapas_v - 0.45)))
+    st_v1 = sn(vi1 - top_land, 0.01)
     st_v0 = sn(st_v1 - dl, 0.01)
     # очаг зала и горн — спиной друг к другу на одной стене: у передней (naves, ugol) или у правой (galereya, pristrojka)
     if kz in ('naves', 'ugol'):
@@ -201,7 +206,7 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
     niz = {'w_pola': P, 'komnaty': komnaty_niz, 'dveri': [], 'okna': []}
 
     # ---------------- план верха ----------------
-    kor_v0 = sn(vi1 - 1.3)
+    # kor_v0 рассчитан выше с учётом пропорций
     polosa_u0 = sn(ui0 + L_sh + TV)
     shir = ui1 - polosa_u0
     if shir >= 5.9:
@@ -377,6 +382,8 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
     # ---------------- полы, перекрытие, потолок, лестница ----------------
     D.kor('poly', MOSH, ui0, ui1, vi0, vi1, 0.0, P, 0.004)
     D.kor('poly', DOSKI, ui0, ui0 + L_sh, vi0, st_v0, F1, F2)
+    if st_v1 < vi1 - 0.05:
+        D.kor('poly', DOSKI, ui0, ui0 + L_sh, st_v1, vi1, F1, F2)       # пол верхней площадки лестницы
     D.kor('poly', DOSKI, ui0 + L_sh, ui1, vi0, vi1, F1, F2)
     D.kor('poly', DOSKI, ui0, ui1, vi0, vi1, EV - 0.06, EV)            # потолок верха
     x = ui0 + L_sh + 0.5
@@ -390,11 +397,15 @@ def sobrat(zerno, kompoz=None, obraz=None, krysha=None):
         va = st_v0 + dl * k / n_st           # боковыми гранями в одной плоскости при чередовании доски и бруса)
         vb = st_v1 if k == n_st - 1 else st_v0 + dl * (k + 1) / n_st
         D.kor('poly', DOSKI if k % 2 else BRUS, ui0, ui0 + L_sh, va, vb, P, P + podem * (k + 1) / n_st, 0.006)
-    for k in range(0, n_st + 1, 3):
+    # перила лестницы идут только до входа в коридор (kor_v0), чтобы выход на 2-й этаж оставался открыт
+    v_perila_end = min(kor_v0, st_v1)
+    k_end = max(0, int((v_perila_end - st_v0) / dl * n_st))
+    for k in range(0, k_end + 1, 3):
         va = st_v0 + dl * k / n_st
         D.brus('poly', BRUS, (ui0 + L_sh - 0.06, va, P + podem * k / n_st), (ui0 + L_sh - 0.06, va, P + podem * k / n_st + 0.95),
                0.07, 0.07, (1, 0, 0))
-    D.brus('poly', BRUS, (ui0 + L_sh - 0.06, st_v0, P + 0.95), (ui0 + L_sh - 0.06, st_v1, F2 + 0.95), 0.08, 0.06, (1, 0, 0))
+    w_end = P + podem * (v_perila_end - st_v0) / dl
+    D.brus('poly', BRUS, (ui0 + L_sh - 0.06, st_v0, P + 0.95), (ui0 + L_sh - 0.06, v_perila_end, w_end + 0.95), 0.08, 0.06, (1, 0, 0))
     D.brus('poly', BRUS, (ui0 + L_sh + 0.04, st_v0, F2 + 1.0), (ui0 + L_sh + 0.04, kor_v0, F2 + 1.0), 0.08, 0.07, (1, 0, 0))
     D.brus('poly', BRUS, (ui0 + 0.04, st_v0 + 0.04, F2 + 1.0), (ui0 + L_sh + 0.04, st_v0 + 0.04, F2 + 1.0), 0.08, 0.07, (0, 1, 0))
     vv = st_v0
